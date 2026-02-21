@@ -1,13 +1,14 @@
 {
-  "agent_name": "devops-engineer",
+  "agent_name": "phoenix-guardian",
   "specializations": [
-    "Docker",
-    "Kubernetes",
-    "CI/CD Pipelines",
-    "Infrastructure as Code",
-    "Monitoring"
+    "System Self-Healing",
+    "Docker/K8s Orchestration",
+    "Rollback Management",
+    "Real-Time Monitoring",
+    "Infrastructure as Code"
   ],
-  "model": "tinyllama",
-  "ollama_host": "http://hypercode-llama:11434",
-  "temperature": 0.7
+  "model": "claude-3-5-sonnet-20241022",
+  "ollama_host": "http://hypercode-ollama:11434",
+  "temperature": 0.1,
+  "max_tokens": 4096
 }

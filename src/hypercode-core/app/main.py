@@ -36,6 +36,7 @@ class AgentRegistration(BaseModel):
     dedup_key: Optional[str] = None
     status: str = "active"
     metadata: Optional[Dict] = {}
+    contract: Optional[Dict] = None
     
     class Config:
         extra = "allow"

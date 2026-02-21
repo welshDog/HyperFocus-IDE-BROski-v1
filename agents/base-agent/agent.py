@@ -275,6 +275,7 @@ Follow these standards strictly and leverage the skills library when applicable.
                 "topics": ["agent.events"],
                 "health_url": self.config.health_url,
                 "dedup_key": self.config.name,
+                "contract": self.contract
             }
             async with httpx.AsyncClient(timeout=10.0) as client:
                 r = await client.post(f"{self.config.core_url}/agents/register", json=payload)

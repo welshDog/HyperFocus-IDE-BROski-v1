@@ -1,0 +1,21 @@
+agent_id: phoenix-guardian
+role: System Guardian
+capabilities: 
+  - self-healing
+  - rollback
+  - monitoring
+  - docker-control
+  - k8s-control
+latency_class: hard_realtime  # HRT | SRT | DT
+budget_limits:
+  tokens_per_hour: 100000
+  cost_per_task: 0.50
+risk_profile: high_trust  # low | medium | high
+tools_allowed: 
+  - docker
+  - kubernetes
+  - github
+  - filesystem
+human_checkpoints: critical_actions_only  # none | all | critical
+a2a_endpoint: "http://phoenix-guardian:8006"
+version: "2.0.0"
