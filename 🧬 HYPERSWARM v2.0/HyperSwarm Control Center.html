@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperSwarm Control Center 🧠💫</title>
+    <style>
+        :root {
+            --color-bg-dark: #0f172a;
+            --color-bg-elevated: #1e293b;
+            --color-bg-card: #334155;
+            --color-text: #f1f5f9;
+            --color-text-dim: #94a3b8;
+            --color-accent: #38bdf8;
+            --color-success: #22c55e;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+            --color-purple: #a855f7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-bg-dark);
+            color: var(--color-text);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        header {
+            background: var(--color-bg-elevated);
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--color-accent);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--color-accent), var(--color-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            color: var(--color-text-dim);
+            font-size: 0.95rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--color-text-dim);
+            font-size: 0.85rem;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-success { background: var(--color-success); }
+        .status-warning { background: var(--color-warning); }
+        .status-error { background: var(--color-error); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--color-bg-elevated);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--color-bg-card);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--color-bg-card);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-hrt { background: #ef4444; color: white; }
+        .badge-srt { background: #f59e0b; color: white; }
+        .badge-dt { background: #22c55e; color: white; }
+
+        .agent-graph {
+            min-height: 400px;
+            background: var(--color-bg-dark);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .node {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            background: var(--color-bg-card);
+            border: 2px solid var(--color-accent);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            transform: scale(1.05);
+            border-color: var(--color-purple);
+            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.3);
+        }
+
+        .node-external {
+            border-color: var(--color-purple);
+        }
+
+        .node-label {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .node-status {
+            font-size: 0.75rem;
+            color: var(--color-text-dim);
+        }
+
+        .edge {
+            position: absolute;
+            height: 2px;
+            background: var(--color-accent);
+            transform-origin: left center;
+            opacity: 0.6;
+        }
+
+        .edge-animated {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .agent-card {
+            background: var(--color-bg-card);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .agent-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-details {
+            font-size: 0.85rem;
+            color: var(--color-text-dim);
+            line-height: 1.6;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--color-text-dim);
+        }
+
+        .metric-value {
+            font-weight: 600;
+        }
+
+        .btn {
+            background: var(--color-accent);
+            color: var(--color-bg-dark);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: var(--color-purple);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--color-bg-card);
+            color: var(--color-text);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .log-entry {
+            background: var(--color-bg-dark);
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .log-timestamp {
+            color: var(--color-text-dim);
+            margin-right: 0.5rem;
+        }
+
+        .log-agent {
+            color: var(--color-accent);
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .intent-box {
+            background: var(--color-bg-dark);
+            border: 2px solid var(--color-accent);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .intent-box textarea {
+            width: 100%;
+            background: var(--color-bg-elevated);
+            border: none;
+            color: var(--color-text);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .sliders {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .slider-label {
+            font-size: 0.85rem;
+            color: var(--color-text-dim);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--color-accent);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--color-bg-elevated);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid var(--color-accent);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .flow-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--color-bg-card);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .pulse {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-success);
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        .cost-tracker {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .cost-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--color-bg-dark);
+            border-radius: 6px;
+        }
+
+        .cost-label {
+            font-size: 0.75rem;
+            color: var(--color-text-dim);
+            margin-bottom: 0.25rem;
+        }
+
+        .cost-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-accent);
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .cost-tracker {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🧠 HYPERSWARM Control Center</h1>
+            <p class="tagline">Self-Healing Agent Operating System • Built for Neurodivergent Minds</p>
+            
+            <div class="stats-bar">
+                <div class="stat">
+                    <span class="status-dot status-success"></span>
+                    <span class="stat-label">Status:</span>
+                    <span class="stat-value">OPERATIONAL</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Active Agents:</span>
+                    <span class="stat-value" id="agentCount">5</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Daily Budget:</span>
+                    <span class="stat-value" id="budgetDisplay">$3.47 / $10.00</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Flow State:</span>
+                    <div class="flow-indicator">
+                        <div class="pulse"></div>
+                        <span id="flowState">HYPERFOCUS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Visual Cortex -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-header">
+                <h2 class="card-title">🎯 Visual Cortex — Agent Mesh</h2>
+                <button class="btn btn-secondary" onclick="refreshGraph()">Refresh</button>
+            </div>
+            <div class="agent-graph" id="agentGraph">
+                <!-- Nodes positioned dynamically -->
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Intent Box -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💭 Intent Box</h2>
+                </div>
+                <div class="intent-box">
+                    <textarea id="intentInput" placeholder="What do you want to achieve? (e.g., 'Fix my broken deploy and migrate to event-driven architecture')">My API is down. Fix it and explain what happened.</textarea>
+                    
+                    <div class="sliders">
+                        <div class="slider-group">
+                            <label class="slider-label">Speed: <span id="speedValue">50</span>%</label>
+                            <input type="range" id="speedSlider" min="0" max="100" value="50">
+                        </div>
+                        <div class="slider-group">
+                            <label class="slider-label">Safety: <span id="safetyValue">80</span>%</label>
+                            <input type="range" id="safetySlider" min="0" max="100" value="80">
+                        </div>
+                        <div class="slider-group">
+                            <label class="slider-label">Cost: <span id="costValue">40</span>%</label>
+                            <input type="range" id="costSlider" min="0" max="100" value="40">
+                        </div>
+                        <div class="slider-group">
+                            <label class="slider-label">Depth: <span id="depthValue">60</span>%</label>
+                            <input type="range" id="depthSlider" min="0" max="100" value="60">
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn" onclick="executeIntent()">🚀 Execute</button>
+                        <button class="btn btn-secondary" onclick="simulateIntent()">🧪 Simulate First</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Contracts -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📜 Agent Contracts</h2>
+                </div>
+                <div id="agentContracts">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Cost Tracker -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💰 CFO — Cost Tracker</h2>
+                </div>
+                <div class="cost-tracker">
+                    <div class="cost-item">
+                        <div class="cost-label">Today</div>
+                        <div class="cost-amount" id="costToday">$3.47</div>
+                    </div>
+                    <div class="cost-item">
+                        <div class="cost-label">This Week</div>
+                        <div class="cost-amount" id="costWeek">$18.24</div>
+                    </div>
+                    <div class="cost-item">
+                        <div class="cost-label">Last Task</div>
+                        <div class="cost-amount" id="costLast">$0.27</div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <div class="metric">
+                        <span class="metric-label">GPT-4o calls:</span>
+                        <span class="metric-value" id="gpt4Calls">47</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">GPT-4o mini calls:</span>
+                        <span class="metric-value" id="gpt4miniCalls">213</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">External A2A calls:</span>
+                        <span class="metric-value" id="a2aCalls">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <div class="card-header">
+                    <h2 class="card-title">📋 Activity Log — Last 10 Actions</h2>
+                    <button class="btn btn-secondary" onclick="clearLog()">Clear</button>
+                </div>
+                <div id="activityLog">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HITL Modal -->
+    <div class="modal" id="hitlModal">
+        <div class="modal-content">
+            <h2 class="modal-title">🚨 Human Approval Required</h2>
+            <div class="modal-body" id="hitlMessage">
+                PHOENIX wants to restart 3 production containers. This action is reversible but may cause 10-15s downtime.
+            </div>
+            <div class="btn-group">
+                <button class="btn" onclick="approveAction()">✅ Approve</button>
+                <button class="btn btn-secondary" onclick="denyAction()">❌ Deny</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Agent data
+        const agents = [
+            {
+                id: 'phoenix',
+                name: 'PHOENIX',
+                role: 'System Guardian',
+                latencyClass: 'HRT',
+                status: 'active',
+                cost: 0.02,
+                capabilities: ['self-healing', 'rollback', 'monitoring'],
+                x: 150, y: 50
+            },
+            {
+                id: 'architect',
+                name: 'ARCHITECT',
+                role: 'Design &amp; Refactor',
+                latencyClass: 'SRT',
+                status: 'idle',
+                cost: 0.10,
+                capabilities: ['planning', 'design', 'refactoring'],
+                x: 400, y: 50
+            },
+            {
+                id: 'researcher',
+                name: 'RESEARCHER',
+                role: 'Deep Dive',
+                latencyClass: 'DT',
+                status: 'active',
+                cost: 0.05,
+                capabilities: ['research', 'analysis', 'documentation'],
+                x: 650, y: 50
+            },
+            {
+                id: 'cfo',
+                name: 'CFO',
+                role: 'Cost Controller',
+                latencyClass: 'SRT',
+                status: 'active',
+                cost: 0.01,
+                capabilities: ['budget', 'routing', 'optimization'],
+                x: 275, y: 200
+            },
+            {
+                id: 'narrator',
+                name: 'NARRATOR',
+                role: 'UX Specialist',
+                latencyClass: 'SRT',
+                status: 'active',
+                cost: 0.02,
+                capabilities: ['explanation', 'visualization', 'communication'],
+                x: 525, y: 200
+            },
+            {
+                id: 'google-adk',
+                name: 'Google ADK',
+                role: 'External Planner',
+                latencyClass: 'SRT',
+                status: 'available',
+                cost: 0.15,
+                external: true,
+                capabilities: ['event-driven', 'architecture', 'patterns'],
+                x: 400, y: 320
+            }
+        ];
+
+        const edges = [
+            {from: 'phoenix', to: 'cfo'},
+            {from: 'architect', to: 'cfo'},
+            {from: 'architect', to: 'google-adk'},
+            {from: 'researcher', to: 'narrator'},
+            {from: 'cfo', to: 'narrator'}
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAgentGraph();
+            renderAgentContracts();
+            initSliders();
+            addLogEntry('SYSTEM', 'HyperSwarm Control Center initialized');
+            addLogEntry('PHOENIX', 'All systems operational. Monitoring active.');
+        });
+
+        function renderAgentGraph() {
+            const graph = document.getElementById('agentGraph');
+            graph.innerHTML = '';
+
+            // Render edges first (so they appear behind nodes)
+            edges.forEach(edge => {
+                const from = agents.find(a => a.id === edge.from);
+                const to = agents.find(a => a.id === edge.to);
+                
+                const x1 = from.x + 60;
+                const y1 = from.y + 40;
+                const x2 = to.x + 60;
+                const y2 = to.y + 40;
+                
+                const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                const edgeEl = document.createElement('div');
+                edgeEl.className = 'edge edge-animated';
+                edgeEl.style.left = x1 + 'px';
+                edgeEl.style.top = y1 + 'px';
+                edgeEl.style.width = length + 'px';
+                edgeEl.style.transform = `rotate(${angle}deg)`;
+                graph.appendChild(edgeEl);
+            });
+
+            // Render nodes
+            agents.forEach(agent => {
+                const node = document.createElement('div');
+                node.className = 'node' + (agent.external ? ' node-external' : '');
+                node.style.left = agent.x + 'px';
+                node.style.top = agent.y + 'px';
+                node.innerHTML = `
+                    <div class="node-label">${agent.name}</div>
+                    <div class="node-status">${agent.status}</div>
+                    <span class="status-dot status-${agent.status === 'active' ? 'success' : 'warning'}" style="margin-top: 4px;"></span>
+                `;
+                node.onclick = () => showAgentDetails(agent);
+                graph.appendChild(node);
+            });
+        }
+
+        function renderAgentContracts() {
+            const container = document.getElementById('agentContracts');
+            container.innerHTML = agents.filter(a => !a.external).map(agent => `
+                <div class="agent-card">
+                    <div class="agent-name">
+                        <span>${agent.name}</span>
+                        <span class="badge badge-${agent.latencyClass.toLowerCase()}">${agent.latencyClass}</span>
+                    </div>
+                    <div class="agent-details">
+                        ${agent.role}<br>
+                        Cost: $${agent.cost} / task<br>
+                        Capabilities: ${agent.capabilities.join(', ')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initSliders() {
+            ['speed', 'safety', 'cost', 'depth'].forEach(type => {
+                const slider = document.getElementById(type + 'Slider');
+                const value = document.getElementById(type + 'Value');
+                slider.oninput = () => value.textContent = slider.value;
+            });
+        }
+
+        function addLogEntry(agent, message) {
+            const log = document.getElementById('activityLog');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-timestamp">[${time}]</span>
+                <span class="log-agent">${agent}:</span>
+                ${message}
+            `;
+            log.insertBefore(entry, log.firstChild);
+            
+            // Keep only last 10 entries
+            while (log.children.length > 10) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function executeIntent() {
+            const intent = document.getElementById('intentInput').value;
+            const speed = document.getElementById('speedSlider').value;
+            const safety = document.getElementById('safetySlider').value;
+            
+            addLogEntry('CONDUCTOR', `Processing intent: "${intent.substring(0, 50)}..."`);
+            
+            // Simulate agent workflow
+            setTimeout(() => {
+                addLogEntry('PHOENIX', 'Detected 2 crashed containers: api-service, worker-queue');
+                updateAgentStatus('phoenix', 'active');
+            }, 500);
+            
+            setTimeout(() => {
+                if (safety > 60) {
+                    showHITLModal('PHOENIX wants to restart 2 containers. Approve?');
+                } else {
+                    addLogEntry('PHOENIX', '✅ Auto-approved (safety threshold). Restarting containers...');
+                    executeRestart();
+                }
+            }, 1500);
+        }
+
+        function executeRestart() {
+            setTimeout(() => {
+                addLogEntry('PHOENIX', '✅ Containers restarted successfully. Running health checks...');
+                updateCost(0.02);
+            }, 1000);
+            
+            setTimeout(() => {
+                addLogEntry('NARRATOR', '✅ All systems healthy. Total cost: $0.02. Time: 4.2s');
+                updateAgentStatus('phoenix', 'idle');
+                refreshGraph();
+            }, 2000);
+        }
+
+        function simulateIntent() {
+            addLogEntry('SIMULATOR', 'Creating shadow environment...');
+            setTimeout(() => {
+                addLogEntry('SIMULATOR', '🧪 Simulation complete. No issues detected. Safe to proceed.');
+            }, 1500);
+        }
+
+        function showHITLModal(message) {
+            document.getElementById('hitlMessage').textContent = message;
+            document.getElementById('hitlModal').classList.add('active');
+        }
+
+        function approveAction() {
+            document.getElementById('hitlModal').classList.remove('active');
+            addLogEntry('HUMAN', '✅ Action approved');
+            executeRestart();
+        }
+
+        function denyAction() {
+            document.getElementById('hitlModal').classList.remove('active');
+            addLogEntry('HUMAN', '❌ Action denied. Escalating to manual review.');
+            updateAgentStatus('phoenix', 'waiting');
+        }
+
+        function updateAgentStatus(agentId, status) {
+            const agent = agents.find(a => a.id === agentId);
+            if (agent) agent.status = status;
+            renderAgentGraph();
+        }
+
+        function updateCost(amount) {
+            const current = parseFloat(document.getElementById('costToday').textContent.replace('$', ''));
+            const newTotal = (current + amount).toFixed(2);
+            document.getElementById('costToday').textContent = '$' + newTotal;
+            document.getElementById('budgetDisplay').textContent = `$${newTotal} / $10.00`;
+            document.getElementById('costLast').textContent = '$' + amount.toFixed(2);
+        }
+
+        function refreshGraph() {
+            addLogEntry('SYSTEM', 'Refreshing agent status...');
+            renderAgentGraph();
+        }
+
+        function clearLog() {
+            document.getElementById('activityLog').innerHTML = '';
+            addLogEntry('SYSTEM', 'Log cleared');
+        }
+
+        function showAgentDetails(agent) {
+            alert(`${agent.name}\n\nRole: ${agent.role}\nLatency Class: ${agent.latencyClass}\nStatus: ${agent.status}\nCost: $${agent.cost}/task\n\nCapabilities:\n${agent.capabilities.map(c => '• ' + c).join('\n')}`);
+        }
+    </script>
+</body>
+</html>
