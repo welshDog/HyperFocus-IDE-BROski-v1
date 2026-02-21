@@ -13,6 +13,7 @@ import redis
 from anthropic import Anthropic
 from datetime import datetime
 import json
+from prometheus_fastapi_instrumentator import Instrumentator
 
 class AgentConfig:
     """Base configuration for all agents"""
@@ -68,6 +69,10 @@ class BaseAgent:
     def __init__(self, config: AgentConfig):
         self.config = config
         self.app = FastAPI(title=f"{config.name} Agent")
+        
+        # Initialize Prometheus Instrumentator
+        Instrumentator().instrument(self.app).expose(self.app)
+        
         self.client = Anthropic(api_key=config.anthropic_key)
         self.redis = redis.from_url(config.redis_url, decode_responses=True)
         self._agent_id: str | None = None

@@ -26,7 +26,7 @@ services:
   # ====================
   hypercode-core:
     build:
-      context: ./THE HYPERCODE/hypercode-core
+      context: ./src/hypercode-core
       dockerfile: Dockerfile
     container_name: hypercode-core
     environment:
@@ -74,12 +74,12 @@ services:
         max-size: "10m"
         max-file: "3"
     volumes:
-      - ./THE HYPERCODE/hypercode-core:/app
+      - ./src/hypercode-core:/app
 
   # Frontend - Terminal
   broski-terminal:
     build:
-      context: ./BROski Business Agents/broski-terminal
+      context: ./src/broski-terminal
       dockerfile: Dockerfile
     container_name: broski-terminal
     environment:
@@ -116,48 +116,48 @@ services:
       - no-new-privileges:true
 
   # Frontend - Editor
-  hyperflow-editor:
-    build:
-      context: ./THE HYPERCODE/hyperflow-editor
-      dockerfile: Dockerfile
-    container_name: hyperflow-editor
-    ports:
-      - "5173:4173" # Public facing
-    depends_on:
-      hypercode-core:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
-        reservations:
-          cpus: "0.1"
-          memory: 128M
-    networks:
-      - frontend-net
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:4173/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    security_opt:
-      - no-new-privileges:true
+  # hyperflow-editor:
+  #   build:
+  #     context: ./THE HYPERCODE/hyperflow-editor
+  #     dockerfile: Dockerfile
+  #   container_name: hyperflow-editor
+  #   ports:
+  #     - "5173:4173" # Public facing
+  #   depends_on:
+  #     hypercode-core:
+  #       condition: service_healthy
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.5"
+  #         memory: 512M
+  #       reservations:
+  #         cpus: "0.1"
+  #         memory: 128M
+  #   networks:
+  #     - frontend-net
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-qO-", "http://localhost:4173/"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+  #   security_opt:
+  #     - no-new-privileges:true
 
   # Worker
   celery-worker:
     build:
-      context: ./THE HYPERCODE/hypercode-core
+      context: ./src/hypercode-core
       dockerfile: Dockerfile
     container_name: celery-worker
     command: ["python", "-m", "celery", "-A", "app.core.celery_app", "worker", "--loglevel=info"]
     volumes:
-      - ./THE HYPERCODE/hypercode-core:/app
+      - ./src/hypercode-core:/app
     environment:
       CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
       CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
@@ -552,13 +552,10 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - REDIS_URL=redis://redis:6379
       - CORE_URL=http://hypercode-core:8000
-      - AGENT_PORT=8006
       - AGENT_HEALTH_URL=http://devops-engineer:8006/health
-      # DOCKER_HOST removed for security hardening
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
       - ./agents/base-agent/agent.py:/app/base_agent.py:ro
-      # Docker socket mount removed for security hardening
     depends_on:
       redis:
         condition: service_healthy
@@ -593,6 +590,7 @@ services:
       - ALL
 
   security-engineer:
+    profiles: ["agents"]
     build:
       context: ./agents/06-security-engineer
     container_name: security-engineer
@@ -638,6 +636,7 @@ services:
       - ALL
 
   system-architect:
+    profiles: ["agents"]
     build:
       context: ./agents/07-system-architect
     container_name: system-architect
@@ -645,7 +644,6 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - REDIS_URL=redis://redis:6379
       - CORE_URL=http://hypercode-core:8000
-      - AGENT_PORT=8008
       - AGENT_HEALTH_URL=http://system-architect:8008/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
@@ -692,7 +690,8 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - REDIS_URL=redis://redis:6379
       - CORE_URL=http://hypercode-core:8000
-      - AGENT_HEALTH_URL=http://project-strategist:8001/health
+      - AGENT_PORT=8009
+      - AGENT_HEALTH_URL=http://project-strategist:8009/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
       - ./agents/base-agent/agent.py:/app/base_agent.py:ro
@@ -705,7 +704,7 @@ services:
       - backend-net
       - data-net
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8001/health', timeout=5).raise_for_status()"]
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8009/health', timeout=5).raise_for_status()"]
       interval: 60s
       timeout: 10s
       retries: 5
@@ -859,6 +858,7 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
     ports:
       - "3001:3000"
     networks:

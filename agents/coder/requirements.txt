@@ -13,3 +13,4 @@ opentelemetry-sdk
 opentelemetry-exporter-otlp
 opentelemetry-distro
 opentelemetry-instrumentation-fastapi
+prometheus-fastapi-instrumentator
