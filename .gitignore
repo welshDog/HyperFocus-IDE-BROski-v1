@@ -1,0 +1,121 @@
+# Node / Next.js
+node_modules/
+.npm/
+.pnpm-store/
+.next/
+out/
+dist/
+coverage/
+.turbo/
+
+# Workspace caches & editors
+.vscode/
+.DS_Store
+
+# Env & local configs
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing & reports
+playwright-report/
+test-results/
+.lighthouseci/
+*.tsbuildinfo
+health_check_report_*.json
+
+# Prisma
+prisma/*.log
+prisma/migrations/.DS_Store
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# Vercel
+.vercel/
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+.coverage
+*.pyc
+*.pyo
+*.pyd
+
+# Docker
+.docker/
+
+# Temporary notes (use notes/ directory for tracked notes)
+*.tmp
+*.bak
+*~
+
+# SSH keys and sensitive data
+data/ollama/*.pub
+data/ollama/id_*
+*.pem
+*.key
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Archive directories (uncomment if you want to ignore)
+# docs/archive/
+# .trae/documents/archive/
+
+data/ollama/models
+ 
+ # Python
+ *.py[cod]
+ *$py.class
+ ENV/
+ env/
+ *.egg-info/
+ build/
+ 
+ # Node
+ yarn-error.log*
+ package-lock.json
+ 
+ # Docker
+ *.log
+ docker/volumes/
+ *.tar
+ 
+ # Data & Models
+ data/
+ datasets/
+ *.bin
+ *.model
+ *.weights
+ *.h5
+ *.pkl
+ *.ckpt
+ 
+ # OS
+ desktop.ini
+ 
+ # Backups
+ *.backup
+ backups/
+ 
+ # Large archives
+ *.zip
+ *.tar.gz
+ *.rar
