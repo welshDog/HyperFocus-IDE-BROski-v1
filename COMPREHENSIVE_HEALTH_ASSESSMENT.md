@@ -1,49 +1,37 @@
 # 🏥 HyperCode Comprehensive Health Assessment
-**Date:** 2026-02-21 22:41:41
+**Date:** 2026-02-22 18:19:06
 
 ## 1. System Resources & Container Status
 | Container | Status | State | CPU | Memory | Errors Found |
 |---|---|---|---|---|---|
-| ✅ backend-specialist | Up 4 seconds (health: starting) | running | 48.97% | 66.08MiB / 512MiB (12.91%) | ⚠️ 9 issues |
-
-<details><summary>Recent Errors for backend-specialist</summary>
-
-```
-ModuleNotFoundError: No module named 'prometheus_fastapi_instrumentator'
-ModuleNotFoundError: No module named 'prometheus_fastapi_instrumentator'
-ModuleNotFoundError: No module named 'prometheus_fastapi_instrumentator'
-ModuleNotFoundError: No module named 'prometheus_fastapi_instrumentator'
-ModuleNotFoundError: No module named 'prometheus_fastapi_instrumentator'
-```
-</details>
-
-| ✅ broski-terminal | Up About an hour (healthy) | running | 0.00% | 81.62MiB / 1GiB (7.97%) | ✅ None |
-| ⚪ celery-worker | Exited (1) About an hour ago | exited | N/A | N/A (N/A) | ✅ None |
-| ✅ coder-agent | Up 52 seconds (healthy) | running | 0.37% | 71.77MiB / 512MiB (14.02%) | ✅ None |
-| ✅ crew-orchestrator | Up 52 seconds (healthy) | running | 0.19% | 51.57MiB / 512MiB (10.07%) | ✅ None |
-| ✅ database-architect | Up 6 minutes (healthy) | running | 0.32% | 54MiB / 512MiB (10.55%) | ✅ None |
-| ✅ devops-engineer | Up 6 minutes (healthy) | running | 0.29% | 62.91MiB / 512MiB (12.29%) | ✅ None |
-| ✅ frontend-specialist | Up About an hour (healthy) | running | 0.17% | 52.09MiB / 512MiB (10.17%) | ✅ None |
-| ✅ grafana | Up 4 hours | running | 0.48% | 86.81MiB / 4.804GiB (1.76%) | ✅ None |
-| ✅ hyper-agents-box | Up 4 hours (healthy) | running | 0.25% | 35.54MiB / 512MiB (6.94%) | ✅ None |
-| ✅ hypercode-core | Up About an hour (healthy) | running | 6.32% | 56.4MiB / 1GiB (5.51%) | ✅ None |
-| ✅ hypercode-dashboard | Up 4 hours (healthy) | running | 0.00% | 6.418MiB / 128MiB (5.01%) | ✅ None |
-| ✅ hypercode-ollama | Up 4 hours (healthy) | running | 0.00% | 14.27MiB / 4GiB (0.35%) | ✅ None |
-| ✅ jaeger | Up 4 hours | running | 0.02% | 8.637MiB / 4.804GiB (0.18%) | ✅ None |
-| ✅ mcp-server | Up 4 hours | running | 0.00% | 15.66MiB / 512MiB (3.06%) | ⚠️ 7 issues |
+| ✅ backend-specialist | Up 5 hours (healthy) | running | 0.20% | 96.64MiB / 512MiB (18.88%) | ✅ None |
+| ✅ broski-terminal | Up 6 hours (healthy) | running | 0.00% | 63.16MiB / 1GiB (6.17%) | ✅ None |
+| ✅ celery-worker | Up 6 hours (healthy) | running | 0.18% | 113.3MiB / 1GiB (11.07%) | ✅ None |
+| ✅ coder-agent | Up 5 hours (healthy) | running | 1.52% | 118.9MiB / 512MiB (23.23%) | ✅ None |
+| ✅ crew-orchestrator | Up 18 hours (healthy) | running | 0.29% | 44.47MiB / 512MiB (8.69%) | ✅ None |
+| ✅ database-architect | Up 5 hours (healthy) | running | 0.23% | 90.74MiB / 512MiB (17.72%) | ✅ None |
+| ✅ devops-engineer | Up 44 minutes (healthy) | running | 0.80% | 79.54MiB / 512MiB (15.53%) | ✅ None |
+| ✅ frontend-specialist | Up 6 hours (healthy) | running | 0.29% | 94.37MiB / 512MiB (18.43%) | ✅ None |
+| ✅ grafana | Up 24 hours | running | 0.65% | 95.3MiB / 4.804GiB (1.94%) | ✅ None |
+| ✅ hyper-agents-box | Up 24 hours (healthy) | running | 0.27% | 32.41MiB / 512MiB (6.33%) | ✅ None |
+| ✅ hypercode-core | Up 6 hours (healthy) | running | 7.32% | 65.17MiB / 1GiB (6.36%) | ✅ None |
+| ✅ hypercode-dashboard | Up 24 hours (healthy) | running | 0.00% | 5.977MiB / 128MiB (4.67%) | ✅ None |
+| ✅ hypercode-ollama | Up 24 hours (healthy) | running | 0.00% | 13.58MiB / 4GiB (0.33%) | ✅ None |
+| ✅ jaeger | Up 24 hours | running | 0.04% | 7.793MiB / 4.804GiB (0.16%) | ✅ None |
+| ✅ mcp-server | Up 24 hours | running | 0.00% | 16.23MiB / 512MiB (3.17%) | ⚠️ 10 issues |
 
 <details><summary>Recent Errors for mcp-server</summary>
 
 ```
 {"method":"notifications/message","params":{"level":"critical","data":"Critical-level message"},"jsonrpc":"2.0"}
 {"method":"notifications/message","params":{"level":"error","data":"Error-level message"},"jsonrpc":"2.0"}
-{"method":"notifications/message","params":{"level":"error","data":"Error-level message"},"jsonrpc":"2.0"}
 {"method":"notifications/message","params":{"level":"critical","data":"Critical-level message"},"jsonrpc":"2.0"}
+{"method":"notifications/message","params":{"level":"error","data":"Error-level message"},"jsonrpc":"2.0"}
 {"method":"notifications/message","params":{"level":"critical","data":"Critical-level message"},"jsonrpc":"2.0"}
 ```
 </details>
 
-| ✅ modest_keldysh | Up 4 hours | running | 0.00% | 7.457MiB / 4.804GiB (0.15%) | ⚠️ 1 issues |
+| ✅ modest_keldysh | Up 24 hours | running | 0.00% | 6.266MiB / 4.804GiB (0.13%) | ⚠️ 1 issues |
 
 <details><summary>Recent Errors for modest_keldysh</summary>
 
@@ -52,13 +40,13 @@ ModuleNotFoundError: No module named 'prometheus_fastapi_instrumentator'
 ```
 </details>
 
-| ✅ postgres | Up 4 hours (healthy) | running | 0.00% | 20.17MiB / 1GiB (1.97%) | ✅ None |
-| ✅ project-strategist | Up 29 minutes (healthy) | running | 0.26% | 50.97MiB / 512MiB (9.96%) | ✅ None |
-| ✅ prometheus | Up 4 hours | running | 0.29% | 50.44MiB / 4.804GiB (1.03%) | ✅ None |
-| ✅ qa-engineer | Up 6 minutes (healthy) | running | 0.17% | 58.17MiB / 512MiB (11.36%) | ✅ None |
-| ✅ redis | Up 4 hours (healthy) | running | 0.60% | 7.34MiB / 256MiB (2.87%) | ✅ None |
-| ✅ security-engineer | Up 6 minutes (healthy) | running | 0.19% | 53.7MiB / 512MiB (10.49%) | ✅ None |
-| ✅ system-architect | Up 6 minutes (healthy) | running | 0.53% | 53.8MiB / 512MiB (10.51%) | ✅ None |
+| ✅ postgres | Up 24 hours (healthy) | running | 0.00% | 18.31MiB / 1GiB (1.79%) | ✅ None |
+| ✅ project-strategist | Up 5 hours (healthy) | running | 0.25% | 102.8MiB / 512MiB (20.08%) | ✅ None |
+| ✅ prometheus | Up 24 hours | running | 0.34% | 57.8MiB / 4.804GiB (1.17%) | ✅ None |
+| ✅ qa-engineer | Up 9 minutes (healthy) | running | 0.36% | 76.67MiB / 512MiB (14.97%) | ✅ None |
+| ✅ redis | Up 24 hours (healthy) | running | 0.76% | 7.691MiB / 256MiB (3.00%) | ✅ None |
+| ✅ security-engineer | Up 5 hours (healthy) | running | 5.35% | 90.08MiB / 512MiB (17.59%) | ✅ None |
+| ✅ system-architect | Up 19 minutes (healthy) | running | 0.26% | 77.04MiB / 512MiB (15.05%) | ✅ None |
 
 ## 2. API Endpoint Validation
 | Service | Endpoint | Status | Response |
@@ -67,14 +55,14 @@ ModuleNotFoundError: No module named 'prometheus_fastapi_instrumentator'
 | ✅ HyperCode Metrics | `http://localhost:8000/metrics` | 200 | OK |
 | ✅ Broski Terminal | `http://localhost:3000/api/health` | 200 | OK |
 | ✅ Ollama | `http://localhost:11434/api/tags` | 200 | OK |
-| ❌ Agent: frontend-specialist | `http://localhost:8002/health` | 0 | [WinError 10061] No connection could be made because the target machine actively refused it |
-| ❌ Agent: backend-specialist | `http://localhost:8003/health` | 0 | [WinError 10061] No connection could be made because the target machine actively refused it |
-| ❌ Agent: database-architect | `http://localhost:8004/health` | 0 | [WinError 10061] No connection could be made because the target machine actively refused it |
-| ❌ Agent: qa-engineer | `http://localhost:8005/health` | 0 | [WinError 10061] No connection could be made because the target machine actively refused it |
-| ❌ Agent: devops-engineer | `http://localhost:8006/health` | 0 | [WinError 10061] No connection could be made because the target machine actively refused it |
-| ❌ Agent: security-engineer | `http://localhost:8007/health` | 0 | [WinError 10061] No connection could be made because the target machine actively refused it |
-| ❌ Agent: system-architect | `http://localhost:8008/health` | 0 | [WinError 10061] No connection could be made because the target machine actively refused it |
-| ❌ Agent: project-strategist | `http://localhost:8009/health` | 0 | [WinError 10061] No connection could be made because the target machine actively refused it |
+| ✅ Agent: frontend-specialist | `http://localhost:8002/health` | 200 | OK |
+| ✅ Agent: backend-specialist | `http://localhost:8003/health` | 200 | OK |
+| ✅ Agent: database-architect | `http://localhost:8004/health` | 200 | OK |
+| ✅ Agent: qa-engineer | `http://localhost:8005/health` | 200 | OK |
+| ✅ Agent: devops-engineer | `http://localhost:8006/health` | 200 | OK |
+| ✅ Agent: security-engineer | `http://localhost:8007/health` | 200 | OK |
+| ✅ Agent: system-architect | `http://localhost:8008/health` | 200 | OK |
+| ✅ Agent: project-strategist | `http://localhost:8009/health` | 200 | OK |
 | ✅ Agent: coder-agent | `http://localhost:8001/health` | 200 | OK |
 
 ## 3. Infrastructure Connectivity

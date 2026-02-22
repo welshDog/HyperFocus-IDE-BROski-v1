@@ -217,6 +217,7 @@ services:
       - ./agents/coder/workspace:/workspace
       
       - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
       - ./Configuration_Kit:/app/hive_mind:ro
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -391,6 +392,8 @@ services:
     networks:
       - backend-net
       - data-net
+    ports:
+      - "8002:8002"
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8002/health', timeout=5).raise_for_status()"]
       interval: 60s
@@ -431,6 +434,8 @@ services:
     networks:
       - backend-net
       - data-net
+    ports:
+      - "8003:8003"
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8003/health', timeout=5).raise_for_status()"]
       interval: 60s
@@ -482,6 +487,8 @@ services:
     networks:
       - backend-net
       - data-net
+    ports:
+      - "8004:8004"
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8004/health', timeout=5).raise_for_status()"]
       interval: 60s
@@ -530,6 +537,8 @@ services:
     networks:
       - backend-net
       - data-net
+    ports:
+      - "8005:8005"
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8005/health', timeout=5).raise_for_status()"]
       interval: 60s
@@ -578,6 +587,8 @@ services:
     networks:
       - backend-net
       - data-net
+    ports:
+      - "8006:8006"
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8006/health', timeout=5).raise_for_status()"]
       interval: 60s
@@ -626,6 +637,8 @@ services:
     networks:
       - backend-net
       - data-net
+    ports:
+      - "8007:8007"
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8007/health', timeout=5).raise_for_status()"]
       interval: 60s
@@ -674,6 +687,8 @@ services:
     networks:
       - backend-net
       - data-net
+    ports:
+      - "8008:8008"
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8008/health', timeout=5).raise_for_status()"]
       interval: 60s
@@ -726,6 +741,8 @@ services:
     networks:
       - backend-net
       - data-net
+    ports:
+      - "8009:8009"
     healthcheck:
       test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8009/health', timeout=5).raise_for_status()"]
       interval: 60s

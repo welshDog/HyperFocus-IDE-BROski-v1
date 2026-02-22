@@ -9,7 +9,8 @@ from contextlib import AsyncExitStack
 # Try to import BaseAgent from the mounted volume location
 try:
     from base_agent import BaseAgent, AgentConfig, TaskRequest, TaskResponse
-except ImportError:
+except ImportError as e:
+    print(f"CRITICAL: Failed to import BaseAgent: {e}")
     # Fallback for local development or if not mounted yet
     import sys
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../base-agent")))
@@ -237,14 +238,22 @@ class CoderAgent(BaseAgent):
              return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
-    # Ensure environment variables are set or defaulted
-    if not os.getenv("AGENT_NAME"):
-        os.environ["AGENT_NAME"] = "coder-agent"
-    if not os.getenv("AGENT_ROLE"):
-        os.environ["AGENT_ROLE"] = "Coder"
-    if not os.getenv("AGENT_PORT"):
-        os.environ["AGENT_PORT"] = "8000" # Match docker-compose port mapping
+    try:
+        # Ensure environment variables are set or defaulted
+        if not os.getenv("AGENT_NAME"):
+            os.environ["AGENT_NAME"] = "coder-agent"
+        if not os.getenv("AGENT_ROLE"):
+            os.environ["AGENT_ROLE"] = "Coder"
+        if not os.getenv("AGENT_PORT"):
+            os.environ["AGENT_PORT"] = "8000" # Match docker-compose port mapping
 
-    config = AgentConfig()
-    agent = CoderAgent(config)
-    agent.run()
+        config = AgentConfig()
+        agent = CoderAgent(config)
+        print("Starting CoderAgent...")
+        agent.run()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"CRITICAL: CoderAgent crashed: {e}")
+        import time
+        time.sleep(60) # Keep container alive to read logs
