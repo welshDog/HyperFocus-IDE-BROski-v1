@@ -2,7 +2,7 @@
 FastAPI Orchestration Layer for HyperCode Agent Crew
 Manages communication between 8 specialized agents
 """
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -10,12 +10,13 @@ import redis.asyncio as redis
 import httpx
 import os
 import json
+import asyncio
 from datetime import datetime
 
 app = FastAPI(
     title="HyperCode Agent Crew Orchestrator",
     description="Coordinates 8 specialized AI agents for software development",
-    version="2.0"
+    version="2.1"
 )
 
 # CORS configuration
@@ -29,6 +30,31 @@ app.add_middleware(
 
 # Redis connection for agent communication
 redis_client = None
+
+# WebSocket Connection Manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message)
+            except Exception:
+                # Handle disconnected clients gracefully
+                pass
+
+manager = ConnectionManager()
 
 # Agent service endpoints
 AGENTS = {
@@ -73,12 +99,89 @@ class AgentStatus(BaseModel):
     last_activity: str
 
 
+class MockRedis:
+    def __init__(self):
+        self.data = {}
+        self.pubsub_channels = {}
+
+    async def hset(self, name, mapping=None, **kwargs):
+        if name not in self.data:
+            self.data[name] = {}
+        if mapping:
+            self.data[name].update(mapping)
+        self.data[name].update(kwargs)
+        return len(kwargs)
+
+    async def hgetall(self, name):
+        return self.data.get(name, {})
+
+    async def publish(self, channel, message):
+        if channel in self.pubsub_channels:
+            for queue in self.pubsub_channels[channel]:
+                await queue.put({"type": "message", "data": message})
+        return 1
+
+    def pubsub(self):
+        return MockPubSub(self)
+
+    async def close(self):
+        pass
+
+    async def ping(self):
+        return True
+
+class MockPubSub:
+    def __init__(self, redis):
+        self.redis = redis
+        self.queue = asyncio.Queue()
+
+    async def subscribe(self, channel):
+        if channel not in self.redis.pubsub_channels:
+            self.redis.pubsub_channels[channel] = []
+        self.redis.pubsub_channels[channel].append(self.queue)
+
+    async def listen(self):
+        while True:
+            yield await self.queue.get()
+
 @app.on_event("startup")
 async def startup():
     global redis_client
     redis_url = os.getenv("REDIS_URL", "redis://redis:6379")
-    redis_client = await redis.from_url(redis_url, decode_responses=True)
+    try:
+        redis_client = await redis.from_url(redis_url, decode_responses=True)
+        await redis_client.ping()
+        print(f"✅ Connected to Redis at {redis_url}")
+    except Exception as e:
+        print(f"⚠️ Redis connection failed ({e}). Using In-Memory Mock Redis.")
+        redis_client = MockRedis()
+
+    # Start Redis subscription listener in background
+    asyncio.create_task(redis_listener())
     print("✅ Agent Crew Orchestrator started")
+    for route in app.routes:
+        print(f"Route: {route.path} {route.name}")
+
+async def redis_listener():
+    """Listens for Redis events and broadcasts to WebSockets"""
+    pubsub = redis_client.pubsub()
+    await pubsub.subscribe("agent_events")
+    async for message in pubsub.listen():
+        if message["type"] == "message":
+            await manager.broadcast(message["data"])
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive, maybe receive commands
+            data = await websocket.receive_text()
+            # Simple echo or command processing
+            if data == "ping":
+                await websocket.send_text("pong")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -89,7 +192,7 @@ async def shutdown():
 async def root():
     return {
         "service": "HyperCode Agent Crew Orchestrator",
-        "version": "2.0",
+        "version": "2.1",
         "agents": list(AGENTS.keys()),
         "status": "operational"
     }
@@ -120,6 +223,13 @@ async def plan_task(request: TaskRequest, background_tasks: BackgroundTasks):
             "context": json.dumps(request.context or {})
         }
     )
+    
+    # Broadcast event
+    await redis_client.publish("agent_events", json.dumps({
+        "type": "task_created",
+        "task_id": task_id,
+        "description": request.task
+    }))
     
     # Send to Project Strategist
     background_tasks.add_task(
@@ -184,6 +294,13 @@ async def start_workflow(workflow_type: str, request: WorkflowRequest):
             "created_at": datetime.now().isoformat()
         }
     )
+    
+    # Broadcast event
+    await redis_client.publish("agent_events", json.dumps({
+        "type": "workflow_started",
+        "workflow_id": workflow_id,
+        "workflow_type": workflow_type
+    }))
     
     return {
         "workflow_id": workflow_id,

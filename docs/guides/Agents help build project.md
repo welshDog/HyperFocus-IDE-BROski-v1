@@ -47,6 +47,71 @@ Here’s a safe, concrete way to start tomorrow:
 
 ***
 
+## 🚀 Quick Start Snippets (Task 3.1)
+
+Copy-paste these blocks to get started immediately.
+
+### 1. Assemble a Crew (JSON)
+
+Use this payload with `POST /crews/assemble` to create a new development crew.
+
+```json
+{
+  "mission": "Refactor the authentication middleware for better error handling",
+  "agents": [
+    "system-architect",
+    "backend-specialist",
+    "qa-engineer"
+  ],
+  "context": {
+    "repo_path": "/app/src",
+    "constraints": [
+      "Must use try/catch blocks",
+      "Log errors to structured logger",
+      "Return standard HTTP error responses"
+    ]
+  },
+  "priority": "high"
+}
+```
+
+### 2. Check Agent Health (curl)
+
+Verify that your agents are online and responsive.
+
+```bash
+# Check all agents
+curl -X GET http://localhost:8000/agents/health
+
+# Check specific agent
+curl -X GET http://localhost:8000/agents/backend-specialist/health
+
+# Response Example:
+# {
+#   "status": "online",
+#   "uptime": "2d 4h 12m",
+#   "active_tasks": 0,
+#   "memory_usage": "145MB"
+# }
+```
+
+### 3. Run a Task via CLI
+
+If you prefer the command line:
+
+```bash
+# List available agents
+python cli/main.py agents
+
+# Submit a task
+python cli/main.py run "Analyze the database schema for performance bottlenecks"
+
+# Check costs
+python cli/main.py costs
+```
+
+***
+
 If you tell me:
 
 - Which agent you want to “be your coding buddy” first (e.g. `backend-specialist`, `frontend-specialist`, `system-architect`),
