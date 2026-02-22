@@ -11,3 +11,4 @@ celery==5.3.6
 sqlalchemy==2.0.25
 psycopg2-binary==2.9.9
 prometheus-fastapi-instrumentator>=6.0.0
+openai>=1.0.0

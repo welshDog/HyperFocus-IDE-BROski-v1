@@ -42,7 +42,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     AGENT_NAME=project-strategist \
     AGENT_ROLE="Project Strategist" \
     AGENT_MODEL=claude-3-opus-20240229 \
-    AGENT_PORT=8001
+    AGENT_PORT=8009
 
 # Install wheels from builder
 COPY --from=builder /wheels /wheels
@@ -53,11 +53,13 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Copy application code (after deps for better caching)
 COPY agent.py .
 COPY config.json .
+COPY ../base-agent/base_agent.py .
+COPY ../base-agent/event_bus.py .
 
 # Mount point for Hive Mind
 VOLUME ["/app/hive_mind"]
 
-EXPOSE 8001
+EXPOSE 8009
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=20s \
     CMD curl -f http://localhost:${AGENT_PORT}/health || exit 1

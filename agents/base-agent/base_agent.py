@@ -11,6 +11,7 @@ import asyncio
 import httpx
 import redis
 from anthropic import Anthropic
+from openai import OpenAI
 from datetime import datetime
 import json
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -23,6 +24,7 @@ class AgentConfig:
         self.model = os.getenv("AGENT_MODEL", "claude-3-5-sonnet-20241022")
         self.port = int(os.getenv("AGENT_PORT", "8001"))
         self.anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+        self.perplexity_key = os.getenv("PERPLEXITY_API_KEY")
         self.redis_url = os.getenv("REDIS_URL", "redis://redis:6379")
         self.core_url = os.getenv("CORE_URL", "http://hypercode-core:8000")
         self.health_url = os.getenv("AGENT_HEALTH_URL", f"http://localhost:{self.port}/health")
@@ -73,10 +75,17 @@ class BaseAgent:
         # Initialize Prometheus Instrumentator
         Instrumentator().instrument(self.app).expose(self.app)
         
-        self.client = Anthropic(api_key=config.anthropic_key)
+        if self.config.model.startswith("sonar") or "perplexity" in self.config.model:
+            self.client = OpenAI(api_key=config.perplexity_key, base_url="https://api.perplexity.ai")
+            self.provider = "perplexity"
+        else:
+            self.client = Anthropic(api_key=config.anthropic_key)
+            self.provider = "anthropic"
+            
         self.redis = redis.from_url(config.redis_url, decode_responses=True)
         self._agent_id: str | None = None
         self._heartbeat_task: asyncio.Task | None = None
+        self.contract: Dict | None = None
         
         # Register routes
         self.setup_routes()
@@ -158,18 +167,28 @@ class BaseAgent:
                 print(f"⚠️ Memory recall failed: {e}")
             # ---------------------------
 
-            # Call Claude
-            message = self.client.messages.create(
-                model=self.config.model,
-                max_tokens=4096,
-                system=system_prompt,
-                messages=[{
-                    "role": "user",
-                    "content": f"Task: {request.task}\n\nContext: {json.dumps(request.context or {})}"
-                }]
-            )
-            
-            result = message.content[0].text
+            # Call LLM
+            if getattr(self, 'provider', 'anthropic') == "perplexity":
+                response = self.client.chat.completions.create(
+                    model=self.config.model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"Task: {request.task}\n\nContext: {json.dumps(request.context or {})}"}
+                    ],
+                    max_tokens=4096
+                )
+                result = response.choices[0].message.content
+            else:
+                message = self.client.messages.create(
+                    model=self.config.model,
+                    max_tokens=4096,
+                    system=system_prompt,
+                    messages=[{
+                        "role": "user",
+                        "content": f"Task: {request.task}\n\nContext: {json.dumps(request.context or {})}"
+                    }]
+                )
+                result = message.content[0].text
             
             # Store result in Redis
             self.redis.hset(

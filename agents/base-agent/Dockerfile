@@ -34,7 +34,7 @@ ENV PATH=/home/appuser/.local/bin:$PATH
 RUN chown -R appuser:appuser /home/appuser/.local
 
 # Copy agent code
-COPY --chown=appuser:appuser agent.py .
+COPY --chown=appuser:appuser base_agent.py .
 COPY --chown=appuser:appuser config/ ./config/
 
 # Copy Hive Mind (shared memory/standards)
@@ -49,4 +49,4 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 
 EXPOSE 8001
 
-CMD ["python", "agent.py"]
+CMD ["python", "base_agent.py"]

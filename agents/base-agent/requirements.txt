@@ -11,3 +11,5 @@ python-dotenv==1.0.0
 tiktoken==0.6.0
 chromadb==0.4.22
 prometheus-fastapi-instrumentator>=6.0.0
+openai>=1.0.0
+openai>=1.0.0

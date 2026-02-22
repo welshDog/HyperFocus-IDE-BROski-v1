@@ -32,7 +32,7 @@ redis_client = None
 
 # Agent service endpoints
 AGENTS = {
-    "project_strategist": "http://project-strategist:8001",
+    "project_strategist": "http://project-strategist:8009",
     "frontend_specialist": "http://frontend-specialist:8002",
     "backend_specialist": "http://backend-specialist:8003",
     "database_architect": "http://database-architect:8004",

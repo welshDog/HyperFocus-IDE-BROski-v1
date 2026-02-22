@@ -213,7 +213,8 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     volumes:
       - ./agents/coder/workspace:/workspace
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
       - ./Configuration_Kit:/app/hive_mind:ro
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -330,6 +331,7 @@ services:
       - CORE_URL=http://hypercode-core:8000
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
+      - ./agents/crew-orchestrator/main.py:/app/main.py:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -371,7 +373,9 @@ services:
       - AGENT_HEALTH_URL=http://frontend-specialist:8002/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
     deploy:
       resources:
         limits:
@@ -414,7 +418,9 @@ services:
       - AGENT_HEALTH_URL=http://backend-specialist:8003/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -461,7 +467,9 @@ services:
       - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-changeme}@postgres:5432/hypercode
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -509,7 +517,9 @@ services:
       - AGENT_HEALTH_URL=http://qa-engineer:8005/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -555,7 +565,9 @@ services:
       - AGENT_HEALTH_URL=http://devops-engineer:8006/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -601,7 +613,9 @@ services:
       - AGENT_HEALTH_URL=http://security-engineer:8007/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -647,7 +661,9 @@ services:
       - AGENT_HEALTH_URL=http://system-architect:8008/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -694,7 +710,10 @@ services:
       - AGENT_HEALTH_URL=http://project-strategist:8009/health
     volumes:
       - ./Configuration_Kit:/app/hive_mind:ro
-      - ./agents/base-agent/agent.py:/app/base_agent.py:ro
+      
+      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
+      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
+      - ./agents/08-project-strategist/agent.py:/app/agent.py:ro
     depends_on:
       redis:
         condition: service_healthy

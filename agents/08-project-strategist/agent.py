@@ -79,22 +79,30 @@ Return structured JSON with:
         # Get planning from Claude
         system_prompt = self.build_system_prompt()
         
-        message = self.client.messages.create(
-            model=self.config.model,
-            max_tokens=4096,
-            system=system_prompt,
-            messages=[{
-                "role": "user",
-                "content": f"""Plan this task:
+        try:
+            message = self.client.messages.create(
+                model=self.config.model,
+                max_tokens=4096,
+                system=system_prompt,
+                messages=[{
+                    "role": "user",
+                    "content": f"""Plan this task:
 
 Task: {request.task}
 Context: {json.dumps(request.context or {})}
 
 Create a detailed breakdown with specific subtasks for each specialist agent."""
-            }]
-        )
-        
-        result = message.content[0].text
+                }]
+            )
+            result = message.content[0].text
+        except Exception as e:
+            print(f"⚠️ Anthropic API Failed: {e}")
+            return {
+                "task_id": request.task_id,
+                "status": "error",
+                "error": str(e),
+                "detail": "LLM generation failed"
+            }
         
         # Parse the plan
         try:
