@@ -1,9 +1,4 @@
-# System Architect Agent - Optimized
-# Multi-stage build with improved caching
-
-# ========================================
-# Stage 1: Builder
-# ========================================
+# system-architect - Optimized
 FROM python:3.11.8-slim AS builder
 
 WORKDIR /build
@@ -17,7 +12,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies (leverage cache)
+# Install Python dependencies
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
@@ -29,7 +24,7 @@ FROM python:3.11.8-slim
 
 WORKDIR /app
 
-# Install runtime dependencies (curl for healthcheck)
+# Install runtime dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
@@ -50,9 +45,11 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir /wheels/* && \
     rm -rf /wheels
 
-# Copy application code (after deps for better caching)
+# Copy application code
 COPY agent.py .
 COPY config.json .
+COPY base_agent.py .
+COPY event_bus.py .
 
 # Mount point for Hive Mind
 VOLUME ["/app/hive_mind"]
@@ -60,6 +57,6 @@ VOLUME ["/app/hive_mind"]
 EXPOSE 8008
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=20s \
-    CMD curl -f http://localhost:${AGENT_PORT}/health || exit 1
+    CMD curl -f http://localhost:$8008/health || exit 1
 
 CMD ["python", "agent.py"]

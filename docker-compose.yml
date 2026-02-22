@@ -40,6 +40,8 @@ services:
       - JWT_SECRET=${HYPERCODE_JWT_SECRET} # Ensure backward compatibility
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - AGENT_MODEL=sonar
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-dummy} # Required by config but unused if Anthropic is primary
       - OTLP_EXPORTER_DISABLED=${OTLP_EXPORTER_DISABLED}
       - OTLP_ENDPOINT=${OTLP_ENDPOINT}
@@ -704,6 +706,8 @@ services:
     container_name: project-strategist
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - AGENT_MODEL=sonar-reasoning-pro
       - REDIS_URL=redis://redis:6379
       - CORE_URL=http://hypercode-core:8000
       - AGENT_PORT=8009

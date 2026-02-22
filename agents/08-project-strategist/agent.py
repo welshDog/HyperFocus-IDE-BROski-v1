@@ -80,23 +80,38 @@ Return structured JSON with:
         system_prompt = self.build_system_prompt()
         
         try:
-            message = self.client.messages.create(
-                model=self.config.model,
-                max_tokens=4096,
-                system=system_prompt,
-                messages=[{
-                    "role": "user",
-                    "content": f"""Plan this task:
+            prompt_content = f"""Plan this task:
 
 Task: {request.task}
 Context: {json.dumps(request.context or {})}
 
 Create a detailed breakdown with specific subtasks for each specialist agent."""
-                }]
-            )
-            result = message.content[0].text
+
+            if hasattr(self, "provider") and self.provider == "perplexity":
+                # Perplexity / OpenAI Compatible
+                response = self.client.chat.completions.create(
+                    model=self.config.model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt_content}
+                    ]
+                )
+                result = response.choices[0].message.content
+            else:
+                # Default to Anthropic
+                message = self.client.messages.create(
+                    model=self.config.model,
+                    max_tokens=4096,
+                    system=system_prompt,
+                    messages=[{
+                        "role": "user",
+                        "content": prompt_content
+                    }]
+                )
+                result = message.content[0].text
+
         except Exception as e:
-            print(f"⚠️ Anthropic API Failed: {e}")
+            print(f"⚠️ AI Provider Failed: {e}")
             return {
                 "task_id": request.task_id,
                 "status": "error",
