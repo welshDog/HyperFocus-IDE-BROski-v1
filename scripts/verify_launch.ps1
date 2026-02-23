@@ -32,16 +32,17 @@ function Test-Url {
 }
 
 # 1. Verify Nginx
-Test-Url "https://localhost/health" "Nginx Gateway"
+Test-Url "http://localhost:8088/health" "Nginx Gateway"
 
 # 2. Verify Core API
-Test-Url "https://localhost/api/health" "HyperCode Core API"
+Test-Url "http://localhost:8000/health" "HyperCode Core API (Direct)"
+Test-Url "http://localhost:8088/api/health" "HyperCode Core API (via Gateway)"
 
 # 3. Verify Frontend
-Test-Url "https://localhost/" "Broski Terminal"
+Test-Url "http://localhost:3000/" "Broski Terminal"
 
 # 4. Verify Grafana
-Test-Url "https://localhost/grafana/login" "Grafana Monitoring"
+Test-Url "http://localhost:3001/login" "Grafana Monitoring"
 
 # 5. Database Check
 Write-Host -NoNewline "Checking Database (postgres)... "
