@@ -1,0 +1,40 @@
+# Security-patched version of project-strategist image
+# This Dockerfile rebuilds the image with all system packages updated to patch vulnerabilities
+
+FROM python:3.11-bookworm
+
+# Security: Update all system packages to latest versions
+# This patches CVEs in: openssl, expat, krb5, glibc, systemd, perl, sqlite3, pam, gnupg2, etc.
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+      curl \
+      ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Upgrade pip, setuptools, and wheel to patched versions
+# Patches CVE-2025-47273, CVE-2024-6345 (setuptools), CVE-2026-24049 (wheel), CVE-2025-8869 (pip)
+RUN pip install --no-cache-dir --upgrade \
+    pip>=26.0 \
+    setuptools>=78.1.1 \
+    wheel>=0.46.2
+
+WORKDIR /app
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Note: Copy your application files here
+# COPY your_wheels /wheels
+# RUN pip install --no-cache-dir /wheels/*.whl
+
+# COPY app.py .
+# ... other files ...
+
+# EXPOSE 8009
+# VOLUME [/app/hive_mind]
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+#   CMD curl -f http://localhost:8009/health || exit 1
+# CMD ["python", "agent.py"]
