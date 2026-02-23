@@ -1,0 +1,26 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: hypercode
+  name: agent-orchestrator-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "services"]
+  verbs: ["get", "list", "watch", "create", "delete"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "delete", "get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: agent-orchestrator-binding
+  namespace: hypercode
+subjects:
+- kind: ServiceAccount
+  name: hypercode-agent-sa
+  namespace: hypercode
+roleRef:
+  kind: Role
+  name: agent-orchestrator-role
+  apiGroup: rbac.authorization.k8s.io

@@ -70,6 +70,7 @@
             margin-bottom: 0.5rem;
             background: linear-gradient(90deg, var(--color-accent), var(--color-purple));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -670,8 +671,8 @@
 
         // WebSocket & API Integration
         let socket;
-        const API_BASE = 'http://localhost:8080';
-        const WS_URL = 'ws://localhost:8080/ws';
+        const API_BASE = 'http://localhost:8081';
+        const WS_URL = 'ws://localhost:8081/ws';
 
         function connectWebSocket() {
             addLogEntry('SYSTEM', 'Initiating neural link...');
@@ -712,15 +713,75 @@
             }
         }
 
+        // Performance: Render Queue for high-frequency updates (Batching & RAF)
+        const updateQueue = [];
+        let isProcessingQueue = false;
+
+        function processQueue() {
+            if (updateQueue.length === 0) {
+                isProcessingQueue = false;
+                return;
+            }
+
+            isProcessingQueue = true;
+            
+            // Process a batch (limit to 50 updates per frame to maintain 60 FPS)
+            const BATCH_SIZE = 50;
+            const updates = updateQueue.splice(0, BATCH_SIZE);
+            
+            requestAnimationFrame(() => {
+                // Optimize: Group agent updates for single batch call to vis-network
+                const agentUpdates = [];
+                
+                updates.forEach(data => {
+                    if (data.type === 'task_created') {
+                        addLogEntry('ORCHESTRATOR', `🆕 Task Created: ${data.task_id}`);
+                    } else if (data.type === 'workflow_started') {
+                        addLogEntry('ORCHESTRATOR', `🚀 Workflow Started: ${data.workflow_type}`);
+                    } else if (data.type === 'agent_update') {
+                        // Collect for batch update
+                        agentUpdates.push({id: data.agent, status: data.status});
+                        // Also update internal state
+                        const agent = agents.find(a => a.id === data.agent);
+                        if (agent) agent.status = data.status;
+                    } else if (data.type === 'log') {
+                        addLogEntry(data.source || 'SYSTEM', data.message);
+                    }
+                });
+
+                // Batch update vis-network nodes
+                if (agentUpdates.length > 0 && network) {
+                    const nodesToUpdate = agentUpdates.map(u => {
+                        const agent = agents.find(a => a.id === u.id);
+                        if (!agent) return null;
+                        
+                        let color = { border: agent.color };
+                        if (u.status === 'active') color = { border: '#22c55e' };
+                        else if (u.status === 'waiting') color = { border: '#f59e0b' };
+                        
+                        return {
+                            id: u.id,
+                            title: `${agent.name} (${u.status})`,
+                            color: color
+                        };
+                    }).filter(Boolean);
+                    
+                    network.body.data.nodes.update(nodesToUpdate);
+                }
+
+                // Continue if queue not empty
+                if (updateQueue.length > 0) {
+                    processQueue();
+                } else {
+                    isProcessingQueue = false;
+                }
+            });
+        }
+
         function handleServerMessage(data) {
-            if (data.type === 'task_created') {
-                addLogEntry('ORCHESTRATOR', `🆕 Task Created: ${data.task_id}`);
-            } else if (data.type === 'workflow_started') {
-                addLogEntry('ORCHESTRATOR', `🚀 Workflow Started: ${data.workflow_type}`);
-            } else if (data.type === 'agent_update') {
-                updateAgentStatus(data.agent, data.status);
-            } else if (data.type === 'log') {
-                addLogEntry(data.source || 'SYSTEM', data.message);
+            updateQueue.push(data);
+            if (!isProcessingQueue) {
+                processQueue();
             }
         }
 
@@ -752,6 +813,7 @@
                 simulateIntent(); // Fallback
             }
         }
+        function renderAgentGraph() {
             const container = document.getElementById('agentGraph');
             
             // Transform data for vis.js
@@ -785,6 +847,11 @@
                     shape: 'box',
                     margin: 10,
                     widthConstraint: { maximum: 150 },
+                    shadow: false, // Performance: Disable shadows
+                },
+                edges: {
+                    shadow: false, // Performance: Disable shadows
+                    smooth: { type: 'continuous' }
                 },
                 physics: {
                     enabled: true,
@@ -796,12 +863,24 @@
                         damping: 0.09,
                         avoidOverlap: 0.1
                     },
-                    stabilization: { iterations: 150 } // Stabilize before rendering
+                    stabilization: {
+                        enabled: true,
+                        iterations: 1000,
+                        updateInterval: 100,
+                        onlyDynamicEdges: false,
+                        fit: true
+                    },
+                    adaptiveTimestep: true // Performance: Adaptive physics
                 },
                 interaction: {
                     hover: true,
                     tooltipDelay: 200,
-                    zoomView: true
+                    zoomView: true,
+                    hideEdgesOnDrag: true, // Performance: Hide edges while dragging
+                    hideNodesOnDrag: false
+                },
+                layout: {
+                    improvedLayout: false // Performance: Faster layout for large graphs
                 }
             };
 

@@ -1,82 +1,56 @@
-
-name: Performance Testing
+name: Performance Optimization
 
 on:
   push:
-    branches: [ "main", "production" ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ "main", "production" ]
-  workflow_dispatch:
+    branches: [ main, develop ]
 
 jobs:
   load-test:
+    name: Load Test & Performance Gate
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-      - name: Install Load Testing Tools
-        run: |
-          pip install locust
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r tests/requirements.txt
+        pip install pandas # For analysis script
 
-      - name: Start Application Stack
-        run: |
-          docker-compose build hypercode-core
-          docker-compose up -d hypercode-core redis
-          sleep 10 # Wait for startup
+    - name: Start Orchestrator Service
+      run: |
+        # Start in background
+        # We assume Redis is mocked or handled by the service itself (MockRedis)
+        uvicorn agents.crew-orchestrator.main:app --host 0.0.0.0 --port 8081 &
+        sleep 5 # Wait for service to start
 
-      - name: Run Locust Load Test
-        run: |
-          # Run headless load test
-          # Users: 50, Spawn Rate: 5, Duration: 1m
-          # Host: localhost:8000 (Forwarded from Docker)
-          locust -f tests/load/locustfile.py \
-            --headless \
-            -u 50 -r 5 \
-            --run-time 1m \
-            --host http://localhost:8000 \
-            --csv=load_test_results \
-            --exit-code-on-error 0 # Don't fail immediately, parse results later
-
-      - name: Analyze Results & Enforce Thresholds
-        run: |
-          python3 -c "
-          import csv
-          import sys
-          
-          THRESHOLD_AVG_MS = 200
-          THRESHOLD_FAIL_RATE = 1.0
-          
-          with open('load_test_results_stats.csv', 'r') as f:
-              reader = csv.DictReader(f)
-              rows = list(reader)
-              # Last row is usually 'Aggregated'
-              agg = rows[-1]
-              
-              avg_resp = float(agg['Average Response Time'])
-              fail_rate = float(agg['Failure Rate'].replace('%', ''))
-              
-              print(f'Average Response Time: {avg_resp}ms')
-              print(f'Failure Rate: {fail_rate}%')
-              
-              if avg_resp > THRESHOLD_AVG_MS:
-                  print(f'❌ FAILED: Response time > {THRESHOLD_AVG_MS}ms')
-                  sys.exit(1)
-                  
-              if fail_rate > THRESHOLD_FAIL_RATE:
-                  print(f'❌ FAILED: Failure rate > {THRESHOLD_FAIL_RATE}%')
-                  sys.exit(1)
-                  
-              print('✅ PERFORMANCE CHECK PASSED')
-          "
-
-      - name: Upload Test Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: load-test-report
-          path: load_test_results_*.csv
+    - name: Run Locust Load Test
+      run: |
+        # Run for 140s (ramp up/down) headless, output CSV
+        # This generates load_test_results_stats.csv
+        locust -f tests/performance/locustfile.py \
+               --headless \
+               --host http://localhost:8081 \
+               --csv=load_test_results \
+               --run-time 140s \
+               --stop-timeout 10 # Allow graceful shutdown
+        
+    - name: Analyze Results & Gate Check
+      run: |
+        # Check P99 < 800ms and Error Rate < 0.1%
+        python tests/performance/check_results.py load_test_results_stats.csv
+        
+    - name: Upload Test Artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: load_test_results_*

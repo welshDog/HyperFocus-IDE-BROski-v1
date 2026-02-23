@@ -1,0 +1,52 @@
+🚀 Example Workflow: Canary Deploy with HyperSwarm
+This example shows how HyperSwarm handles a real-world intent: spinning up a canary deploy and validating error rate against SLOs.
+
+1. User Intent
+In the Intent Box, the user types:
+
+Spin up a canary deploy and validate error rate < 0.1%
+
+and hits Execute. The frontend sends this to the orchestrator, which begins processing.
+
+2. System Boot & Connection
+When the Control Center starts up and connects, the Activity Log shows:
+
+text
+[11:59:30 PM] SYSTEM: HyperSwarm Control Center initialized
+[11:59:30 PM] SYSTEM: ✅ Connected to HyperSwarm Network
+[11:59:30 PM] SYSTEM: Initiating neural link.
+This confirms:
+
+The UI is live and healthy.
+
+The backend and agents are reachable.
+
+The user can safely start sending intents.
+
+3. Intent → Task → Plan
+After the user submits the canary deploy intent, the agents create and accept a concrete execution plan:
+
+text
+[12:12:14 AM] CONDUCTOR: Processing intent: "Spin up a canary deploy and validate error rate < ..."
+[12:12:15 AM] ORCHESTRATOR: 🆕 Task Created: task_20260223_001215
+[12:12:16 AM] ORCHESTRATOR: ✅ Plan accepted. ID: task_20260223_001215
+What’s happening here:
+
+CONDUCTOR parses the natural language intent and turns it into a structured workflow (e.g., steps to create canary, route traffic, collect metrics).
+
+ORCHESTRATOR persists this as a new task (task_20260223_001215).
+
+The plan is validated and accepted, meaning all required agents and tools are available and the cost/safety constraints are satisfied.
+
+At this point, the Visual Cortex graph will highlight the agents involved in the workflow, and the Cost Tracker will begin to reflect any spend associated with the task.
+
+4. Why This Matters
+This sequence illustrates the core HyperSwarm loop:
+
+You think in intents.
+
+CONDUCTOR thinks in workflows.
+
+ORCHESTRATOR thinks in tasks and guarantees.
+
+The Activity Log gives you a clear, timestamped narrative from “Control Center initialized” to “Plan accepted”, and the stable task_20260223_001215 id lets you visually and mentally track your workflow even while background load is running.

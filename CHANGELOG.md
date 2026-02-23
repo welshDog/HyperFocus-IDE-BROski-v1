@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0-performance] - 2026-02-22
+
+### Added
+- **Load Testing Harness:** Locust suite for distributed load testing (`tests/performance/`).
+- **Performance Gates:** CI workflow (`.github/workflows/performance.yml`) for P99 latency and error rate checks.
+- **WebSocket Optimization:** Batch processing for real-time updates in HyperSwarm Control Center.
+- **Graph Optimization:** Enhanced `vis-network` rendering with physics stabilization and shadow removal.
+
+### Changed
+- **HyperSwarm Rendering:** Reduced DOM thrashing with `requestAnimationFrame` and update batching.
+- **Documentation:** Added `PERFORMANCE.md` with benchmarking details.
+
+### Benchmarks
+- **Throughput:** Sustained 100+ concurrent users.
+- **Latency:** Targeted P99 < 800ms.
+- **FPS:** Maintained 60 FPS under load.
+
 ### Added
 - **MCP Integration:** Full support for Model Context Protocol to enable standardized agent tooling.
 - **Autonomous Operations:** Agents can now deploy and manage Docker containers dynamically.

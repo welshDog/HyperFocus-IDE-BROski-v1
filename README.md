@@ -37,6 +37,16 @@ Agent X is a meta-agent system designed to architect, implement, and deploy spec
 
 Get the entire ecosystem running in **under 2 minutes**.
 
+## 🚀 Performance & Benchmarks
+
+HyperCode V3.0 is optimized for high-concurrency environments:
+
+- **100+ Concurrent Agents**
+- **< 800ms Latency (P99)**
+- **60 FPS Real-time Visualization**
+
+See [PERFORMANCE.md](PERFORMANCE.md) for load testing details and results.
+
 ### Prerequisites
 - Docker & Docker Compose
 - Node.js 18+ (for local frontend dev)

@@ -1,37 +1,37 @@
 # 🏥 HyperCode Comprehensive Health Assessment
-**Date:** 2026-02-22 18:19:06
+**Date:** 2026-02-22 23:33:39
 
 ## 1. System Resources & Container Status
 | Container | Status | State | CPU | Memory | Errors Found |
 |---|---|---|---|---|---|
-| ✅ backend-specialist | Up 5 hours (healthy) | running | 0.20% | 96.64MiB / 512MiB (18.88%) | ✅ None |
-| ✅ broski-terminal | Up 6 hours (healthy) | running | 0.00% | 63.16MiB / 1GiB (6.17%) | ✅ None |
-| ✅ celery-worker | Up 6 hours (healthy) | running | 0.18% | 113.3MiB / 1GiB (11.07%) | ✅ None |
-| ✅ coder-agent | Up 5 hours (healthy) | running | 1.52% | 118.9MiB / 512MiB (23.23%) | ✅ None |
-| ✅ crew-orchestrator | Up 18 hours (healthy) | running | 0.29% | 44.47MiB / 512MiB (8.69%) | ✅ None |
-| ✅ database-architect | Up 5 hours (healthy) | running | 0.23% | 90.74MiB / 512MiB (17.72%) | ✅ None |
-| ✅ devops-engineer | Up 44 minutes (healthy) | running | 0.80% | 79.54MiB / 512MiB (15.53%) | ✅ None |
-| ✅ frontend-specialist | Up 6 hours (healthy) | running | 0.29% | 94.37MiB / 512MiB (18.43%) | ✅ None |
-| ✅ grafana | Up 24 hours | running | 0.65% | 95.3MiB / 4.804GiB (1.94%) | ✅ None |
-| ✅ hyper-agents-box | Up 24 hours (healthy) | running | 0.27% | 32.41MiB / 512MiB (6.33%) | ✅ None |
-| ✅ hypercode-core | Up 6 hours (healthy) | running | 7.32% | 65.17MiB / 1GiB (6.36%) | ✅ None |
-| ✅ hypercode-dashboard | Up 24 hours (healthy) | running | 0.00% | 5.977MiB / 128MiB (4.67%) | ✅ None |
-| ✅ hypercode-ollama | Up 24 hours (healthy) | running | 0.00% | 13.58MiB / 4GiB (0.33%) | ✅ None |
-| ✅ jaeger | Up 24 hours | running | 0.04% | 7.793MiB / 4.804GiB (0.16%) | ✅ None |
-| ✅ mcp-server | Up 24 hours | running | 0.00% | 16.23MiB / 512MiB (3.17%) | ⚠️ 10 issues |
+| ✅ backend-specialist | Up 10 hours (healthy) | running | 49.33% | 122MiB / 512MiB (23.83%) | ✅ None |
+| ✅ broski-terminal | Up 11 hours (healthy) | running | 14.54% | 63.67MiB / 1GiB (6.22%) | ✅ None |
+| ✅ celery-worker | Up 11 hours (healthy) | running | 0.05% | 114.5MiB / 1GiB (11.18%) | ✅ None |
+| ✅ coder-agent | Up 10 hours (healthy) | running | 0.28% | 131.2MiB / 512MiB (25.62%) | ✅ None |
+| ✅ crew-orchestrator | Up 23 hours (healthy) | running | 0.58% | 43.94MiB / 512MiB (8.58%) | ✅ None |
+| ✅ database-architect | Up 10 hours (healthy) | running | 0.63% | 99.06MiB / 512MiB (19.35%) | ✅ None |
+| ✅ devops-engineer | Up 6 hours (healthy) | running | 41.40% | 109.7MiB / 512MiB (21.42%) | ✅ None |
+| ✅ frontend-specialist | Up 11 hours (healthy) | running | 1.48% | 101.4MiB / 512MiB (19.80%) | ✅ None |
+| ✅ grafana | Up 29 hours | running | 0.78% | 95.85MiB / 4.804GiB (1.95%) | ✅ None |
+| ✅ hyper-agents-box | Up 29 hours (healthy) | running | 0.26% | 32.6MiB / 512MiB (6.37%) | ✅ None |
+| ✅ hypercode-core | Up 11 hours (healthy) | running | 14.95% | 65.19MiB / 1GiB (6.37%) | ✅ None |
+| ✅ hypercode-dashboard | Up 29 hours (healthy) | running | 0.00% | 5.949MiB / 128MiB (4.65%) | ✅ None |
+| ✅ hypercode-ollama | Up 29 hours (healthy) | running | 0.00% | 13.9MiB / 4GiB (0.34%) | ✅ None |
+| ✅ jaeger | Up 29 hours | running | 0.03% | 7.824MiB / 4.804GiB (0.16%) | ✅ None |
+| ✅ mcp-server | Up 29 hours | running | 0.01% | 14.27MiB / 512MiB (2.79%) | ⚠️ 9 issues |
 
 <details><summary>Recent Errors for mcp-server</summary>
 
 ```
-{"method":"notifications/message","params":{"level":"critical","data":"Critical-level message"},"jsonrpc":"2.0"}
+{"method":"notifications/message","params":{"level":"error","data":"Error-level message"},"jsonrpc":"2.0"}
 {"method":"notifications/message","params":{"level":"error","data":"Error-level message"},"jsonrpc":"2.0"}
 {"method":"notifications/message","params":{"level":"critical","data":"Critical-level message"},"jsonrpc":"2.0"}
 {"method":"notifications/message","params":{"level":"error","data":"Error-level message"},"jsonrpc":"2.0"}
-{"method":"notifications/message","params":{"level":"critical","data":"Critical-level message"},"jsonrpc":"2.0"}
+{"method":"notifications/message","params":{"level":"error","data":"Error-level message"},"jsonrpc":"2.0"}
 ```
 </details>
 
-| ✅ modest_keldysh | Up 24 hours | running | 0.00% | 6.266MiB / 4.804GiB (0.13%) | ⚠️ 1 issues |
+| ✅ modest_keldysh | Up 29 hours | running | 0.00% | 6.215MiB / 4.804GiB (0.13%) | ⚠️ 1 issues |
 
 <details><summary>Recent Errors for modest_keldysh</summary>
 
@@ -40,13 +40,13 @@
 ```
 </details>
 
-| ✅ postgres | Up 24 hours (healthy) | running | 0.00% | 18.31MiB / 1GiB (1.79%) | ✅ None |
-| ✅ project-strategist | Up 5 hours (healthy) | running | 0.25% | 102.8MiB / 512MiB (20.08%) | ✅ None |
-| ✅ prometheus | Up 24 hours | running | 0.34% | 57.8MiB / 4.804GiB (1.17%) | ✅ None |
-| ✅ qa-engineer | Up 9 minutes (healthy) | running | 0.36% | 76.67MiB / 512MiB (14.97%) | ✅ None |
-| ✅ redis | Up 24 hours (healthy) | running | 0.76% | 7.691MiB / 256MiB (3.00%) | ✅ None |
-| ✅ security-engineer | Up 5 hours (healthy) | running | 5.35% | 90.08MiB / 512MiB (17.59%) | ✅ None |
-| ✅ system-architect | Up 19 minutes (healthy) | running | 0.26% | 77.04MiB / 512MiB (15.05%) | ✅ None |
+| ✅ postgres | Up 29 hours (healthy) | running | 0.00% | 18.39MiB / 1GiB (1.80%) | ✅ None |
+| ✅ project-strategist | Up 10 hours (healthy) | running | 0.25% | 103.5MiB / 512MiB (20.21%) | ✅ None |
+| ✅ prometheus | Up 29 hours | running | 0.61% | 57.46MiB / 4.804GiB (1.17%) | ✅ None |
+| ✅ qa-engineer | Up 5 hours (healthy) | running | 5.60% | 93.4MiB / 512MiB (18.24%) | ✅ None |
+| ✅ redis | Up 29 hours (healthy) | running | 0.88% | 7.629MiB / 256MiB (2.98%) | ✅ None |
+| ✅ security-engineer | Up 10 hours (healthy) | running | 0.33% | 99.33MiB / 512MiB (19.40%) | ✅ None |
+| ✅ system-architect | Up 6 hours (healthy) | running | 51.23% | 108.7MiB / 512MiB (21.24%) | ✅ None |
 
 ## 2. API Endpoint Validation
 | Service | Endpoint | Status | Response |
