@@ -1,5 +1,5 @@
 # frontend-specialist - Optimized
-FROM python:3.11.8-slim AS builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /build
 
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # ========================================
 # Stage 2: Runtime
 # ========================================
-FROM python:3.11.8-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 

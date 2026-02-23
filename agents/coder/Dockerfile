@@ -1,7 +1,7 @@
 # Coder Agent - Standardized
 # Based on BaseAgent pattern (FastAPI)
 
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 

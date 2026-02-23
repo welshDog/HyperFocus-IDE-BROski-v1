@@ -1,5 +1,5 @@
 # backend-specialist - Optimized
-FROM python:3.11.8-slim AS builder
+FROM python:3.11-slim-bookworm AS builder
 
 WORKDIR /build
 
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # ========================================
 # Stage 2: Runtime
 # ========================================
-FROM python:3.11.8-slim
+FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
@@ -30,7 +30,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user
+RUN groupadd -r appuser && useradd -r -g appuser -u 1001 appuser
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -46,17 +50,23 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     rm -rf /wheels
 
 # Copy application code
-COPY agent.py .
-COPY config.json .
-COPY base_agent.py .
-COPY event_bus.py .
+COPY --chown=appuser:appuser agent.py .
+COPY --chown=appuser:appuser config.json .
+COPY --chown=appuser:appuser base_agent.py .
+COPY --chown=appuser:appuser event_bus.py .
 
 # Mount point for Hive Mind
+# Note: When mounting volumes in Docker, permissions can be tricky for non-root users.
+# We ensure the directory exists and is owned by appuser.
+RUN mkdir -p /app/hive_mind && chown -R appuser:appuser /app/hive_mind
 VOLUME ["/app/hive_mind"]
 
 EXPOSE 8003
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=20s \
-    CMD curl -f http://localhost:$8003/health || exit 1
+    CMD curl -f http://localhost:8003/health || exit 1
+
+# Switch to non-root user
+USER appuser
 
 CMD ["python", "agent.py"]
