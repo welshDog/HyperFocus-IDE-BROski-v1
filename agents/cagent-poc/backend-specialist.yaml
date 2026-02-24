@@ -1,7 +1,7 @@
 agents:
   backend-specialist:
-    description: Specializes in API development, business logic, and server-side operations
-    model: anthropic/claude-3-5-sonnet-20241022
+    description: Specializes in API design, Python, FastAPI, and Database optimizations
+    model: openai/sonar
 
     instruction: |
       You are a Backend Specialist specializing in API development, business logic, and server-side operations.

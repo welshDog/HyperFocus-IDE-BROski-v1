@@ -1,7 +1,7 @@
 agents:
   qa-engineer:
-    description: Specializes in testing, validation, and quality assurance
-    model: anthropic/claude-3-5-sonnet-20241022
+    description: Specializes in test automation, quality assurance, and bug hunting
+    model: openai/sonar
     instruction: |
       You are a QA Engineer specializing in testing, validation, and quality assurance.
       

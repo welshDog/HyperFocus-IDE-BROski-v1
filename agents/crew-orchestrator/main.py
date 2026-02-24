@@ -1,6 +1,11 @@
 """
 FastAPI Orchestration Layer for HyperCode Agent Crew
 Manages communication between 8 specialized agents
+
+Mission Brief:
+You are the HyperFlow Orchestrator. Your goal is to coordinate 8 specialized AI agents 
+to build software efficiently. You must enforce strict naming conventions (kebab-case), 
+manage workflows via /hyperrun, and ensure robust error handling.
 """
 from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,11 +18,20 @@ import json
 import asyncio
 from datetime import datetime
 import re
+import logging
+
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+logger = logging.getLogger("orchestrator")
 
 app = FastAPI(
     title="HyperCode Agent Crew Orchestrator",
-    description="Coordinates 8 specialized AI agents for software development",
-    version="2.1"
+    description="Coordinates 8 specialized AI agents for software development. Enforces kebab-case naming and manages /hyperrun workflows.",
+    version="2.3"
 )
 
 # CORS configuration
@@ -52,29 +66,39 @@ class ConnectionManager:
             try:
                 await connection.send_text(message)
             except Exception:
-                # Handle disconnected clients gracefully
                 pass
 
 manager = ConnectionManager()
 
-# Agent service endpoints
+# Agent service endpoints - STRICTLY KEBAB-CASE
+# Corrected internal ports based on docker-compose.yml
 AGENTS = {
     "project-strategist": "http://project-strategist:8009",
-    "frontend-specialist": "http://frontend-specialist:8002",
-    "backend-specialist": "http://backend-specialist:8003",
+    "frontend-specialist": "http://frontend-specialist:8000",
+    "backend-specialist": "http://backend-specialist:8000",
     "database-architect": "http://database-architect:8004",
-    "qa-engineer": "http://qa-engineer:8005",
-    "devops-engineer": "http://devops-engineer:8006",
+    "qa-engineer": "http://qa-engineer:8000",
+    "devops-engineer": "http://devops-engineer:8000",
     "security-engineer": "http://security-engineer:8007",
     "system-architect": "http://system-architect:8008",
 }
 
 def to_kebab(name: str) -> str:
+    """Normalize agent names to kebab-case"""
+    # Replace underscores with hyphens
     name = name.replace("_", "-")
+    # Replace spaces with hyphens
+    name = name.replace(" ", "-")
+    # Collapse multiple hyphens
     name = re.sub(r"-+", "-", name)
-    return name.lower()
+    # Lowercase
+    return name.lower().strip("-")
 
 # Request Models
+class HyperRunRequest(BaseModel):
+    task: str
+    context: Optional[Dict[str, Any]] = {}
+
 class TaskRequest(BaseModel):
     task: str
     context: Optional[Dict[str, Any]] = None
@@ -97,13 +121,6 @@ class TaskResponse(BaseModel):
     status: str
     assigned_agents: List[str]
     estimated_time: str
-
-class AgentStatus(BaseModel):
-    agent: str
-    status: str
-    current_task: Optional[str]
-    last_activity: str
-
 
 class MockRedis:
     def __init__(self):
@@ -157,19 +174,15 @@ async def startup():
     try:
         redis_client = await redis.from_url(redis_url, decode_responses=True)
         await redis_client.ping()
-        print(f"✅ Connected to Redis at {redis_url}")
+        logger.info(f"✅ Connected to Redis at {redis_url}")
     except Exception as e:
-        print(f"⚠️ Redis connection failed ({e}). Using In-Memory Mock Redis.")
+        logger.warning(f"⚠️ Redis connection failed ({e}). Using In-Memory Mock Redis.")
         redis_client = MockRedis()
 
-    # Start Redis subscription listener in background
     asyncio.create_task(redis_listener())
-    print("✅ Agent Crew Orchestrator started")
-    for route in app.routes:
-        print(f"Route: {route.path} {route.name}")
+    logger.info("✅ Agent Crew Orchestrator started")
 
 async def redis_listener():
-    """Listens for Redis events and broadcasts to WebSockets"""
     pubsub = redis_client.pubsub()
     await pubsub.subscribe("agent_events")
     async for message in pubsub.listen():
@@ -181,9 +194,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            # Keep connection alive, maybe receive commands
             data = await websocket.receive_text()
-            # Simple echo or command processing
             if data == "ping":
                 await websocket.send_text("pong")
     except WebSocketDisconnect:
@@ -198,28 +209,212 @@ async def shutdown():
 async def root():
     return {
         "service": "HyperCode Agent Crew Orchestrator",
-        "version": "2.1",
+        "version": "2.3",
         "agents": list(AGENTS.keys()),
         "status": "operational"
     }
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
+    """System Health Check"""
     try:
         await redis_client.ping()
-        return {"status": "healthy", "redis": "connected"}
+        return {"status": "healthy", "redis": "connected", "agents_configured": len(AGENTS)}
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Unhealthy: {str(e)}")
 
+@app.get("/agents/status")
+async def get_agents_status():
+    """
+    Get status of all agents.
+    Returns 200 OK with list of agent statuses.
+    """
+    statuses = []
+    async with httpx.AsyncClient() as client:
+        for agent_name, endpoint in AGENTS.items():
+            try:
+                # Attempt to call the agent's health/status endpoint
+                # Short timeout to avoid blocking
+                response = await client.get(f"{endpoint}/health", timeout=2.0)
+                if response.status_code == 200:
+                    statuses.append({"agent": agent_name, "status": "online", "details": response.json()})
+                else:
+                    statuses.append({"agent": agent_name, "status": "degraded", "code": response.status_code})
+            except Exception as e:
+                statuses.append({
+                    "agent": agent_name,
+                    "status": "offline",
+                    "error": str(e)
+                })
+    return {"agents": statuses}
+
+@app.post("/hyperrun")
+async def hyperrun_workflow(request: HyperRunRequest):
+    """
+    Primary workflow execution endpoint.
+    Analyzes task, selects agents, and orchestrates execution.
+    """
+    workflow_id = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    # Simple heuristic for agent selection based on keywords
+    selected_agents = []
+    task_lower = request.task.lower()
+    
+    if "frontend" in task_lower or "ui" in task_lower or "react" in task_lower:
+        selected_agents.append("frontend-specialist")
+    if "backend" in task_lower or "api" in task_lower or "python" in task_lower:
+        selected_agents.append("backend-specialist")
+    if "database" in task_lower or "sql" in task_lower:
+        selected_agents.append("database-architect")
+    if "test" in task_lower or "qa" in task_lower:
+        selected_agents.append("qa-engineer")
+        
+    # Default to project-strategist if no specific domain detected, or as the lead
+    if not selected_agents:
+        selected_agents.append("project-strategist")
+    elif "project-strategist" not in selected_agents:
+        selected_agents.insert(0, "project-strategist") # Always lead with strategist
+
+    results = []
+    
+    # In a real scenario, this would likely be async/parallel or sequential depending on dependency
+    # For this implementation, we will try to trigger them
+    
+    # Use execute_agent_task logic internally or duplicate robust logic here
+    # Ideally, we call a helper function.
+    
+    for agent in selected_agents:
+        try:
+            # Construct message for the agent
+            message = AgentMessage(
+                agent=agent,
+                message=request.task,
+                context={
+                    "task_id": workflow_id,
+                    **request.context
+                }
+            )
+            # Call the robust execution function
+            # We need to await it
+            response_data = await execute_agent_task_internal(agent, message)
+            results.append({
+                "agent": agent,
+                "status": "success",
+                "data": response_data
+            })
+        except Exception as e:
+             logger.error(f"Workflow step failed for {agent}: {e}")
+             results.append({
+                "agent": agent,
+                "status": "failed",
+                "error": str(e)
+            })
+
+    return {
+        "workflow_id": workflow_id,
+        "status": "executed",
+        "results": results
+    }
+
+async def execute_agent_task_internal(agent_name: str, message: AgentMessage) -> Dict:
+    """
+    Internal function to execute agent task with robust error handling and retries.
+    """
+    # 1. Normalize
+    agent_id = to_kebab(agent_name)
+    
+    # 2. Validate
+    if agent_id not in AGENTS:
+        logger.error(f"Invalid agent name: {agent_name} (normalized: {agent_id})")
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_name}' (normalized: '{agent_id}') not found")
+    
+    endpoint_url = f"{AGENTS[agent_id]}/execute"
+    
+    # Construct Universal Payload to satisfy both BaseAgent and cagent-poc
+    # BaseAgent expects: task_id, task, context
+    # cagent-poc expects: message, context, (optional agent)
+    
+    # Extract context and ensure task_id is present
+    context = message.context or {}
+    task_id = context.get("task_id", "unknown_task_id")
+    
+    payload = {
+        "agent": agent_id,
+        "task_id": task_id,        # Required by BaseAgent
+        "task": message.message,   # Required by BaseAgent
+        "message": message.message, # Required by cagent-poc
+        "context": context
+    }
+    
+    # Retry configuration
+    max_retries = 3
+    base_delay = 1.0
+    
+    async with httpx.AsyncClient() as client:
+        for attempt in range(max_retries + 1):
+            try:
+                logger.info(f"Invoking {agent_id} at {endpoint_url} (Attempt {attempt+1}/{max_retries+1})")
+                
+                response = await client.post(
+                    endpoint_url,
+                    json=payload,
+                    timeout=60.0
+                )
+                
+                # Check for HTTP errors
+                if response.status_code >= 400:
+                    # Log detailed error info
+                    logger.error(
+                        f"Agent {agent_id} returned error {response.status_code}\n"
+                        f"URL: {endpoint_url}\n"
+                        f"Response: {response.text}\n"
+                        f"Headers: {response.headers}"
+                    )
+                    
+                    # 4xx errors are likely permanent (bad request), so we might not want to retry unless it's 429 or 408
+                    if response.status_code < 500 and response.status_code not in [408, 429]:
+                        response.raise_for_status()
+                    
+                    # If 5xx or rate limit, raise to trigger retry logic
+                    response.raise_for_status()
+                
+                # Success
+                return response.json()
+                
+            except httpx.HTTPStatusError as e:
+                # Decide whether to retry
+                if e.response.status_code < 500 and e.response.status_code not in [408, 429]:
+                    # Permanent error, re-raise immediately
+                    raise HTTPException(status_code=e.response.status_code, detail=f"Agent error: {e.response.text}")
+                
+                if attempt == max_retries:
+                    logger.error(f"Max retries reached for {agent_id}. Last error: {e}")
+                    raise HTTPException(status_code=503, detail=f"Agent {agent_id} unavailable after retries: {str(e)}")
+                
+            except (httpx.RequestError, httpx.TimeoutException) as e:
+                # Network level errors
+                logger.warning(f"Connection attempt failed for {agent_id}: {e}")
+                if attempt == max_retries:
+                    logger.error(f"Max retries reached for {agent_id} (Network Error).")
+                    raise HTTPException(status_code=503, detail=f"Agent {agent_id} unreachable: {str(e)}")
+            
+            # Exponential backoff
+            delay = base_delay * (2 ** attempt)
+            logger.info(f"Retrying in {delay}s...")
+            await asyncio.sleep(delay)
+
+@app.post("/agent/{agent_name}/execute")
+async def execute_agent_task(agent_name: str, message: AgentMessage):
+    """
+    Direct execution of a specific agent task with normalization.
+    """
+    return await execute_agent_task_internal(agent_name, message)
+
+# Keep existing endpoints for backward compatibility / other tests
+
 @app.post("/plan", response_model=TaskResponse)
 async def plan_task(request: TaskRequest, background_tasks: BackgroundTasks):
-    """
-    Send task to Project Strategist for planning and delegation
-    """
     task_id = f"task_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    
-    # Store task in Redis
     await redis_client.hset(
         f"task:{task_id}",
         mapping={
@@ -229,22 +424,7 @@ async def plan_task(request: TaskRequest, background_tasks: BackgroundTasks):
             "context": json.dumps(request.context or {})
         }
     )
-    
-    # Broadcast event
-    await redis_client.publish("agent_events", json.dumps({
-        "type": "task_created",
-        "task_id": task_id,
-        "description": request.task
-    }))
-    
-    # Send to Project Strategist
-    background_tasks.add_task(
-        delegate_to_strategist,
-        task_id,
-        request.task,
-        request.context
-    )
-    
+    background_tasks.add_task(delegate_to_strategist, task_id, request.task, request.context)
     return TaskResponse(
         task_id=task_id,
         status="planning",
@@ -252,167 +432,16 @@ async def plan_task(request: TaskRequest, background_tasks: BackgroundTasks):
         estimated_time="Calculating..."
     )
 
-@app.post("/agent/{agent_name}/execute")
-async def execute_agent_task(agent_name: str, message: AgentMessage):
-    """
-    Direct execution of a specific agent task
-    """
-    agent_id = to_kebab(agent_name)
-    if agent_id not in AGENTS:
-        raise HTTPException(status_code=404, detail=f"Agent {agent_name} not found")
-    
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{AGENTS[agent_id]}/execute",
-                json=message.dict(),
-                timeout=120.0
-            )
-            return response.json()
-    except httpx.RequestError as e:
-        raise HTTPException(status_code=503, detail=f"Agent {agent_name} unreachable: {str(e)}")
-
-@app.post("/workflow/{workflow_type}")
-async def start_workflow(workflow_type: str, request: WorkflowRequest):
-    """
-    Start a predefined workflow (feature, bugfix, refactor)
-    """
-    workflows = {
-        "feature": ["project-strategist", "system-architect", "frontend-specialist", 
-                   "backend-specialist", "database-architect", "qa-engineer", "devops-engineer"],
-        "bugfix": ["project-strategist", "qa-engineer", "backend-specialist", "frontend-specialist"],
-        "refactor": ["system-architect", "backend-specialist", "frontend-specialist", "qa-engineer"],
-        "security_audit": ["security-engineer", "backend-specialist", "database-architect"]
-    }
-    
-    if workflow_type not in workflows:
-        raise HTTPException(status_code=400, detail=f"Unknown workflow: {workflow_type}")
-    
-    workflow_id = f"workflow_{workflow_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    
-    # Store workflow
-    await redis_client.hset(
-        f"workflow:{workflow_id}",
-        mapping={
-            "type": workflow_type,
-            "description": request.description,
-            "agents": json.dumps(workflows[workflow_type]),
-            "status": "initiated",
-            "created_at": datetime.now().isoformat()
-        }
-    )
-    
-    # Broadcast event
-    await redis_client.publish("agent_events", json.dumps({
-        "type": "workflow_started",
-        "workflow_id": workflow_id,
-        "workflow_type": workflow_type
-    }))
-    
-    return {
-        "workflow_id": workflow_id,
-        "type": workflow_type,
-        "agents": workflows[workflow_type],
-        "status": "initiated"
-    }
-
-@app.get("/agents/status")
-async def get_agents_status():
-    """
-    Get status of all agents
-    """
-    statuses = []
-    async with httpx.AsyncClient() as client:
-        for agent_name, endpoint in AGENTS.items():
-            try:
-                response = await client.get(f"{endpoint}/status", timeout=5.0)
-                statuses.append({
-                    "agent": agent_name,
-                    "status": "online",
-                    "data": response.json()
-                })
-            except Exception as e:
-                statuses.append({
-                    "agent": agent_name,
-                    "status": "offline",
-                    "error": str(e)
-                })
-    return statuses
-
-@app.get("/task/{task_id}")
-async def get_task_status(task_id: str):
-    """
-    Get status of a specific task
-    """
-    task_data = await redis_client.hgetall(f"task:{task_id}")
-    if not task_data:
-        raise HTTPException(status_code=404, detail="Task not found")
-    
-    return {
-        "task_id": task_id,
-        **task_data
-    }
-
-@app.get("/memory/standards")
-async def get_team_standards():
-    """
-    Retrieve shared Team Memory Standards (Hive Mind)
-    """
-    try:
-        with open("/app/hive_mind/Team_Memory_Standards.md", "r") as f:
-            standards = f.read()
-        return {"standards": standards}
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Team standards not found")
-
-@app.get("/skills")
-async def get_agent_skills():
-    """
-    Retrieve Agent Skills Library
-    """
-    try:
-        with open("/app/hive_mind/Agent_Skills_Library.md", "r") as f:
-            skills = f.read()
-        return {"skills": skills}
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Skills library not found")
-
-# Background task functions
 async def delegate_to_strategist(task_id: str, task: str, context: Optional[Dict]):
-    """
-    Send task to Project Strategist for breakdown and delegation
-    """
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(
+            await client.post(
                 f"{AGENTS['project-strategist']}/plan",
-                json={
-                    "task_id": task_id,
-                    "task": task,
-                    "context": context
-                },
+                json={"task_id": task_id, "task": task, "context": context},
                 timeout=120.0
-            )
-            
-            # Update task status
-            await redis_client.hset(
-                f"task:{task_id}",
-                "status",
-                "delegated"
-            )
-            
-            # Store planning result
-            await redis_client.hset(
-                f"task:{task_id}",
-                "plan",
-                json.dumps(response.json())
             )
     except Exception as e:
-        await redis_client.hset(
-            f"task:{task_id}",
-            "status",
-            f"error: {str(e)}"
-        )
+        logger.error(f"Failed to delegate to strategist: {e}")
 
 if __name__ == "__main__":
     import uvicorn

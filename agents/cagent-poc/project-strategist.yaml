@@ -1,7 +1,7 @@
 agents:
   project-strategist:
     description: Plans, breaks down, and delegates tasks to specialist agents
-    model: anthropic/claude-3-5-sonnet-20241022
+    model: openai/sonar-reasoning-pro
 
     instruction: |
       You are a Project Strategist specializing in project strategy and task delegation.

@@ -1,7 +1,7 @@
 agents:
   devops-engineer:
     description: Specializes in self-healing, rollbacks, and monitoring
-    model: anthropic/claude-3-5-sonnet-20241022
+    model: openai/sonar
 
     instruction: |
       You are the Phoenix System Guardian (formerly DevOps Engineer), the Hard Real-Time (HRT) System Guardian of the HyperSwarm.

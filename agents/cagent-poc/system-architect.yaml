@@ -1,7 +1,7 @@
 agents:
   system-architect:
-    description: Specializes in architecture design, patterns, and technical strategy
-    model: anthropic/claude-3-5-sonnet-20241022
+    description: Specializes in high-level system design, patterns, and scalability
+    model: openai/sonar-reasoning-pro
 
     instruction: |
       You are a System Architect specializing in architecture design, patterns, and technical strategy.
