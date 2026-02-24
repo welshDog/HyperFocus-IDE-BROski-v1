@@ -25,23 +25,12 @@ COPY mcp-servers /app/mcp-servers
 # Using wildcard copy for all YAMLs
 COPY cagent-poc/*.yaml /app/configs/
 
+# Copy Agent Wrapper
+COPY cagent-poc/agent_wrapper.py /app/agent_wrapper.py
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Entrypoint script to handle dynamic agent selection
-RUN echo '#!/bin/sh\n\
-if [ -n "$AGENT_NAME" ]; then\n\
-  # If AGENT_NAME is set, use it to find the config file\n\
-  CONFIG_FILE="/app/configs/$AGENT_NAME.yaml"\n\
-  echo "Starting cagent with config: $CONFIG_FILE"\n\
-  exec cagent serve api -l 0.0.0.0:8000 "$CONFIG_FILE"\n\
-else\n\
-  echo "Error: AGENT_NAME environment variable not set"\n\
-  exit 1\n\
-fi' > /entrypoint.sh && chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
-
-# Run cagent
-CMD []
+# Run the wrapper
+CMD ["python", "/app/agent_wrapper.py"]
 

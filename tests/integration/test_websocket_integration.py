@@ -6,8 +6,8 @@ import httpx
 from typing import Dict, Any
 
 # Configuration
-ORCHESTRATOR_URL = "http://127.0.0.1:8081"
-WS_URL = "ws://127.0.0.1:8081/ws"
+ORCHESTRATOR_URL = "http://127.0.0.1:8080"
+WS_URL = "ws://127.0.0.1:8080/ws"
 
 @pytest.mark.asyncio
 async def test_websocket_connection():

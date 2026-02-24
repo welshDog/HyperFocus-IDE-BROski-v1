@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="2" failures="0" skipped="0" tests="2" time="2.113" timestamp="2026-02-24T13:52:31.725602" hostname="HYPERFOCUSzone"><testcase classname="" name="tests.functional.test_coder_capabilities" time="0.000"><error message="collection failure">ImportError while importing test module 'C:\Users\Lyndz\Downloads\HyperFocus-IDE-BROski-v1\tests\functional\test_coder_capabilities.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Python313\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\functional\test_coder_capabilities.py:7: in &lt;module&gt;
+    from app.core.config import get_settings
+E   ModuleNotFoundError: No module named 'app'</error></testcase><testcase classname="" name="cli.tests.test_jira_generator" time="0.000"><error message="collection failure">ImportError while importing test module 'C:\Users\Lyndz\Downloads\HyperFocus-IDE-BROski-v1\cli\tests\test_jira_generator.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Python313\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+cli\tests\test_jira_generator.py:1: in &lt;module&gt;
+    from jira.models import TicketPayload, TicketType
+E   ModuleNotFoundError: No module named 'jira'</error></testcase></testsuite></testsuites>

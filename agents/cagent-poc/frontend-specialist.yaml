@@ -1,9 +1,7 @@
 agents:
   frontend-specialist:
-    role: Frontend Specialist
     description: Specializes in UI/UX, React, Next.js, and Tailwind
     model: anthropic/claude-3-5-sonnet-20241022
-    temperature: 0.7
 
     instruction: |
       You are a Frontend Specialist specializing in UI/UX, React, Next.js, and Tailwind.

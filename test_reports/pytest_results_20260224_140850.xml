@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="5" skipped="0" tests="12" time="9.099" timestamp="2026-02-24T14:08:51.843402" hostname="HYPERFOCUSzone"><testcase classname="" name="tests.functional.test_coder_capabilities" time="0.000"><error message="collection failure">ImportError while importing test module 'C:\Users\Lyndz\Downloads\HyperFocus-IDE-BROski-v1\tests\functional\test_coder_capabilities.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Python313\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests\functional\test_coder_capabilities.py:7: in &lt;module&gt;
+    from app.core.config import get_settings
+E   ModuleNotFoundError: No module named 'app.core.config'</error></testcase><testcase classname="tests.test_agent_crew" name="test_orchestrator_health" time="1.740" /><testcase classname="tests.test_agent_crew" name="test_agents_status" time="2.752"><failure message="assert 'project-strategist' in &quot;['project_strategist', 'frontend_specialist', 'backend_specialist', 'database_architect', 'qa_engineer', 'devops_engineer', 'security_engineer', 'system_architect']&quot;&#10; +  where &quot;['project_strategist', 'frontend_specialist', 'backend_specialist', 'database_architect', 'qa_engineer', 'devops_engineer', 'security_engineer', 'system_architect']&quot; = str(['project_strategist', 'frontend_specialist', 'backend_specialist', 'database_architect', 'qa_engineer', 'devops_engineer', ...])">@pytest.mark.asyncio
+    async def test_agents_status():
+        """Test that all agents are reachable"""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{ORCHESTRATOR_URL}/agents/status")
+            assert response.status_code == 200
+            agents = response.json()
+    
+            # Should have all 8 agents
+            assert len(agents) == 8
+    
+            # Check critical agents are online
+            agent_names = [a["agent"] for a in agents]
+&gt;           assert "project-strategist" in str(agent_names)
+E           assert 'project-strategist' in "['project_strategist', 'frontend_specialist', 'backend_specialist', 'database_architect', 'qa_engineer', 'devops_engineer', 'security_engineer', 'system_architect']"
+E            +  where "['project_strategist', 'frontend_specialist', 'backend_specialist', 'database_architect', 'qa_engineer', 'devops_engineer', 'security_engineer', 'system_architect']" = str(['project_strategist', 'frontend_specialist', 'backend_specialist', 'database_architect', 'qa_engineer', 'devops_engineer', ...])
+
+tests\test_agent_crew.py:33: AssertionError</failure></testcase><testcase classname="tests.test_agent_crew" name="test_plan_feature" time="0.859" /><testcase classname="tests.test_agent_crew" name="test_workflow_creation" time="0.815" /><testcase classname="tests.test_agent_crew" name="test_agent_direct_execution" time="0.832"><failure message="assert 404 in [200, 503]&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">@pytest.mark.asyncio
+    async def test_agent_direct_execution():
+        """Test direct agent execution"""
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                f"{ORCHESTRATOR_URL}/agent/frontend-specialist/execute",
+                json={
+                    "agent": "frontend-specialist",
+                    "message": "Create a button component",
+                    "context": {}
+                }
+            )
+            # May fail if agent is busy, but should not return 404
+&gt;           assert response.status_code in [200, 503]
+E           assert 404 in [200, 503]
+E            +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests\test_agent_crew.py:82: AssertionError</failure></testcase><testcase classname="tests.integration.test_websocket_integration" name="test_websocket_connection" time="0.437"><failure message="Failed: WebSocket connection failed: server rejected WebSocket connection: HTTP 200">@pytest.mark.asyncio
+    async def test_websocket_connection():
+        """
+        Verify that we can establish a WebSocket connection
+        and receive the initial connection success message/state.
+        """
+        try:
+&gt;           async with websockets.connect(WS_URL) as websocket:
+
+tests\integration\test_websocket_integration.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\websockets\asyncio\client.py:590: in __aenter__
+    return await self
+.venv\Lib\site-packages\websockets\asyncio\client.py:546: in __await_impl__
+    await self.connection.handshake(
+.venv\Lib\site-packages\websockets\asyncio\client.py:115: in handshake
+    raise self.protocol.handshake_exc
+.venv\Lib\site-packages\websockets\client.py:327: in parse
+    self.process_response(response)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;websockets.client.ClientProtocol object at 0x000002100EC09E50&gt;
+response = Response(status_code=200, reason_phrase='OK', headers=Headers([('Date', 'Tue, 24 Feb 2026 14:09:00 GMT'), ('Content-Ty...rue , "../",  true ));\n      drawImages( null );\n    &lt;/script&gt;\n  &lt;/body&gt;\n&lt;/html&gt;\n', _exception=InvalidStatus(...))
+
+    def process_response(self, response: Response) -&gt; None:
+        """
+        Check a handshake response.
+    
+        Args:
+            request: WebSocket handshake response received from the server.
+    
+        Raises:
+            InvalidHandshake: If the handshake response is invalid.
+    
+        """
+    
+        if response.status_code != 101:
+&gt;           raise InvalidStatus(response)
+E           websockets.exceptions.InvalidStatus: server rejected WebSocket connection: HTTP 200
+
+.venv\Lib\site-packages\websockets\client.py:144: InvalidStatus
+
+During handling of the above exception, another exception occurred:
+
+    @pytest.mark.asyncio
+    async def test_websocket_connection():
+        """
+        Verify that we can establish a WebSocket connection
+        and receive the initial connection success message/state.
+        """
+        try:
+            async with websockets.connect(WS_URL) as websocket:
+                # Send a ping to verify bidirectional communication
+                await websocket.send("ping")
+                response = await websocket.recv()
+                assert response == "pong"
+        except Exception as e:
+&gt;           pytest.fail(f"WebSocket connection failed: {e}")
+E           Failed: WebSocket connection failed: server rejected WebSocket connection: HTTP 200
+
+tests\integration\test_websocket_integration.py:25: Failed</failure></testcase><testcase classname="tests.integration.test_websocket_integration" name="test_realtime_task_update" time="0.022"><failure message="websockets.exceptions.InvalidStatus: server rejected WebSocket connection: HTTP 200">@pytest.mark.asyncio
+    async def test_realtime_task_update():
+        """
+        Verify that creating a task via REST API triggers a
+        real-time notification on the WebSocket.
+        """
+        task_payload = {
+            "task": "Integration Test Task",
+            "context": {"env": "test"},
+            "priority": "high"
+        }
+    
+&gt;       async with websockets.connect(WS_URL) as websocket:
+
+tests\integration\test_websocket_integration.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\websockets\asyncio\client.py:590: in __aenter__
+    return await self
+.venv\Lib\site-packages\websockets\asyncio\client.py:546: in __await_impl__
+    await self.connection.handshake(
+.venv\Lib\site-packages\websockets\asyncio\client.py:115: in handshake
+    raise self.protocol.handshake_exc
+.venv\Lib\site-packages\websockets\client.py:327: in parse
+    self.process_response(response)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;websockets.client.ClientProtocol object at 0x000002100EFB95B0&gt;
+response = Response(status_code=200, reason_phrase='OK', headers=Headers([('Date', 'Tue, 24 Feb 2026 14:09:00 GMT'), ('Content-Ty...rue , "../",  true ));\n      drawImages( null );\n    &lt;/script&gt;\n  &lt;/body&gt;\n&lt;/html&gt;\n', _exception=InvalidStatus(...))
+
+    def process_response(self, response: Response) -&gt; None:
+        """
+        Check a handshake response.
+    
+        Args:
+            request: WebSocket handshake response received from the server.
+    
+        Raises:
+            InvalidHandshake: If the handshake response is invalid.
+    
+        """
+    
+        if response.status_code != 101:
+&gt;           raise InvalidStatus(response)
+E           websockets.exceptions.InvalidStatus: server rejected WebSocket connection: HTTP 200
+
+.venv\Lib\site-packages\websockets\client.py:144: InvalidStatus</failure></testcase><testcase classname="tests.integration.test_websocket_integration" name="test_workflow_broadcast" time="0.017"><failure message="websockets.exceptions.InvalidStatus: server rejected WebSocket connection: HTTP 200">@pytest.mark.asyncio
+    async def test_workflow_broadcast():
+        """
+        Verify that starting a workflow broadcasts an event.
+        """
+        workflow_payload = {
+            "workflow_type": "feature",
+            "description": "Test Workflow Broadcast",
+            "requirements": {}
+        }
+    
+&gt;       async with websockets.connect(WS_URL) as websocket:
+
+tests\integration\test_websocket_integration.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\websockets\asyncio\client.py:590: in __aenter__
+    return await self
+.venv\Lib\site-packages\websockets\asyncio\client.py:546: in __await_impl__
+    await self.connection.handshake(
+.venv\Lib\site-packages\websockets\asyncio\client.py:115: in handshake
+    raise self.protocol.handshake_exc
+.venv\Lib\site-packages\websockets\client.py:327: in parse
+    self.process_response(response)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;websockets.client.ClientProtocol object at 0x000002100EFBAC40&gt;
+response = Response(status_code=200, reason_phrase='OK', headers=Headers([('Date', 'Tue, 24 Feb 2026 14:09:00 GMT'), ('Content-Ty...rue , "../",  true ));\n      drawImages( null );\n    &lt;/script&gt;\n  &lt;/body&gt;\n&lt;/html&gt;\n', _exception=InvalidStatus(...))
+
+    def process_response(self, response: Response) -&gt; None:
+        """
+        Check a handshake response.
+    
+        Args:
+            request: WebSocket handshake response received from the server.
+    
+        Raises:
+            InvalidHandshake: If the handshake response is invalid.
+    
+        """
+    
+        if response.status_code != 101:
+&gt;           raise InvalidStatus(response)
+E           websockets.exceptions.InvalidStatus: server rejected WebSocket connection: HTTP 200
+
+.venv\Lib\site-packages\websockets\client.py:144: InvalidStatus</failure></testcase><testcase classname="cli.tests.test_jira_generator" name="test_json_generation_story" time="0.001" /><testcase classname="cli.tests.test_jira_generator" name="test_csv_generation" time="0.001" /><testcase classname="cli.tests.test_jira_generator" name="test_validation_required_fields" time="0.001" /></testsuite></testsuites>

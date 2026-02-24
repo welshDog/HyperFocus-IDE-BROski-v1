@@ -12,6 +12,7 @@ import os
 import json
 import asyncio
 from datetime import datetime
+import re
 
 app = FastAPI(
     title="HyperCode Agent Crew Orchestrator",
@@ -58,15 +59,20 @@ manager = ConnectionManager()
 
 # Agent service endpoints
 AGENTS = {
-    "project_strategist": "http://project-strategist:8009",
-    "frontend_specialist": "http://frontend-specialist:8002",
-    "backend_specialist": "http://backend-specialist:8003",
-    "database_architect": "http://database-architect:8004",
-    "qa_engineer": "http://qa-engineer:8005",
-    "devops_engineer": "http://devops-engineer:8006",
-    "security_engineer": "http://security-engineer:8007",
-    "system_architect": "http://system-architect:8008",
+    "project-strategist": "http://project-strategist:8009",
+    "frontend-specialist": "http://frontend-specialist:8002",
+    "backend-specialist": "http://backend-specialist:8003",
+    "database-architect": "http://database-architect:8004",
+    "qa-engineer": "http://qa-engineer:8005",
+    "devops-engineer": "http://devops-engineer:8006",
+    "security-engineer": "http://security-engineer:8007",
+    "system-architect": "http://system-architect:8008",
 }
+
+def to_kebab(name: str) -> str:
+    name = name.replace("_", "-")
+    name = re.sub(r"-+", "-", name)
+    return name.lower()
 
 # Request Models
 class TaskRequest(BaseModel):
@@ -242,7 +248,7 @@ async def plan_task(request: TaskRequest, background_tasks: BackgroundTasks):
     return TaskResponse(
         task_id=task_id,
         status="planning",
-        assigned_agents=["project_strategist"],
+        assigned_agents=["project-strategist"],
         estimated_time="Calculating..."
     )
 
@@ -251,13 +257,14 @@ async def execute_agent_task(agent_name: str, message: AgentMessage):
     """
     Direct execution of a specific agent task
     """
-    if agent_name not in AGENTS:
+    agent_id = to_kebab(agent_name)
+    if agent_id not in AGENTS:
         raise HTTPException(status_code=404, detail=f"Agent {agent_name} not found")
     
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{AGENTS[agent_name]}/execute",
+                f"{AGENTS[agent_id]}/execute",
                 json=message.dict(),
                 timeout=120.0
             )
@@ -271,11 +278,11 @@ async def start_workflow(workflow_type: str, request: WorkflowRequest):
     Start a predefined workflow (feature, bugfix, refactor)
     """
     workflows = {
-        "feature": ["project_strategist", "system_architect", "frontend_specialist", 
-                   "backend_specialist", "database_architect", "qa_engineer", "devops_engineer"],
-        "bugfix": ["project_strategist", "qa_engineer", "backend_specialist", "frontend_specialist"],
-        "refactor": ["system_architect", "backend_specialist", "frontend_specialist", "qa_engineer"],
-        "security_audit": ["security_engineer", "backend_specialist", "database_architect"]
+        "feature": ["project-strategist", "system-architect", "frontend-specialist", 
+                   "backend-specialist", "database-architect", "qa-engineer", "devops-engineer"],
+        "bugfix": ["project-strategist", "qa-engineer", "backend-specialist", "frontend-specialist"],
+        "refactor": ["system-architect", "backend-specialist", "frontend-specialist", "qa-engineer"],
+        "security_audit": ["security-engineer", "backend-specialist", "database-architect"]
     }
     
     if workflow_type not in workflows:
@@ -378,7 +385,7 @@ async def delegate_to_strategist(task_id: str, task: str, context: Optional[Dict
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{AGENTS['project_strategist']}/plan",
+                f"{AGENTS['project-strategist']}/plan",
                 json={
                     "task_id": task_id,
                     "task": task,
