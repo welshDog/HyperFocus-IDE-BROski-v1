@@ -4,6 +4,10 @@ from pydantic import BaseModel
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from prometheus_fastapi_instrumentator import Instrumentator
+import os
+import redis
+import sqlalchemy
+from sqlalchemy import create_engine, text
 
 app = FastAPI(
     title="HyperCode Core API",
@@ -22,6 +26,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Database Configuration
+REDIS_URL = os.getenv("HYPERCODE_REDIS_URL", "redis://redis:6379/0")
+DB_URL = os.getenv("HYPERCODE_DB_URL", "postgresql://postgres:changeme@postgres:5432/hypercode")
 
 # In-memory storage for agents
 agents_registry: Dict[str, Dict] = {}
@@ -52,14 +60,38 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {
+    health_status = {
         "status": "healthy",
         "services": {
-            "database": "connected", # Placeholder
-            "redis": "connected",    # Placeholder
+            "database": "unknown",
+            "redis": "unknown",
             "llm": "ready"
         }
     }
+    
+    # Check Redis
+    try:
+        r = redis.from_url(REDIS_URL)
+        if r.ping():
+            health_status["services"]["redis"] = "connected"
+    except Exception as e:
+        health_status["services"]["redis"] = f"disconnected: {str(e)}"
+        health_status["status"] = "degraded"
+
+    # Check Database
+    try:
+        engine = create_engine(DB_URL)
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+            health_status["services"]["database"] = "connected"
+    except Exception as e:
+        health_status["services"]["database"] = f"disconnected: {str(e)}"
+        health_status["status"] = "degraded"
+
+    if health_status["status"] != "healthy":
+        raise HTTPException(status_code=503, detail=health_status)
+        
+    return health_status
 
 # Agent Registration Endpoints
 @app.post("/agents/register", status_code=status.HTTP_201_CREATED)

@@ -29,3 +29,11 @@ scrape_configs:
         - "security-engineer:8007"
         - "system-architect:8008"
         - "project-strategist:8001"
+
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]

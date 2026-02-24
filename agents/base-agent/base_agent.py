@@ -107,11 +107,41 @@ class BaseAgent:
         
         @self.app.get("/health")
         async def health():
+            health_status = {
+                "status": "healthy",
+                "checks": {
+                    "redis": "unknown",
+                    "core": "unknown"
+                }
+            }
+            
+            # Check Redis
             try:
                 self.redis.ping()
-                return {"status": "healthy", "redis": "connected"}
+                health_status["checks"]["redis"] = "connected"
             except Exception as e:
-                raise HTTPException(status_code=503, detail=str(e))
+                health_status["checks"]["redis"] = f"failed: {str(e)}"
+                health_status["status"] = "degraded"
+            
+            # Check Core
+            try:
+                async with httpx.AsyncClient(timeout=2.0) as client:
+                    resp = await client.get(f"{self.config.core_url}/")
+                    if resp.status_code == 200:
+                        health_status["checks"]["core"] = "connected"
+                    else:
+                        health_status["checks"]["core"] = f"error: {resp.status_code}"
+                        health_status["status"] = "degraded"
+            except Exception as e:
+                health_status["checks"]["core"] = f"failed: {str(e)}"
+                # Core dependency might be optional for some agents running in isolation, 
+                # but generally critical. Marking as degraded.
+                health_status["status"] = "degraded"
+
+            if health_status["status"] != "healthy":
+                raise HTTPException(status_code=503, detail=health_status)
+                
+            return health_status
         
         @self.app.get("/status")
         async def status():

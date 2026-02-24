@@ -1,0 +1,4 @@
+mcp
+redis
+psycopg2-binary
+pydantic

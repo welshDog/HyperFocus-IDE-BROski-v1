@@ -54,9 +54,9 @@ services:
     ports:
       - "8000:8000" # Exposed for Windows/WSL2 compatibility
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "--max-time", "5", "http://localhost:8000/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
     security_opt:
       - no-new-privileges:true
@@ -87,9 +87,9 @@ services:
       NEXT_PUBLIC_AGENTS_URL: ${NEXT_PUBLIC_AGENTS_URL:-http://localhost:8000}
       HOSTNAME: "0.0.0.0"
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) process.exit(1)})"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) process.exit(1)}).on('error', () => process.exit(1))"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
     networks:
       - frontend-net
@@ -114,6 +114,38 @@ services:
         max-file: "3"
     security_opt:
       - no-new-privileges:true
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    networks:
+      - backend-net
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - backend-net
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - backend-net
+    restart: unless-stopped
 
   # Frontend - Editor
   # hyperflow-editor:
@@ -170,7 +202,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "python -m celery -A app.core.celery_app inspect ping || exit 1"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
       start_period: 30s
     depends_on:
@@ -364,24 +396,16 @@ services:
 
   # Agents (Tier 2)
   frontend-specialist:
+    profiles: ["agents"]
     build:
-      context: ./agents/01-frontend-specialist
+      context: ./agents
+      dockerfile: cagent-poc/Dockerfile
     container_name: frontend-specialist
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - REDIS_URL=redis://redis:6379
-      - CORE_URL=http://hypercode-core:8000
-      - AGENT_HEALTH_URL=http://frontend-specialist:8002/health
-    volumes:
-      - ./Configuration_Kit:/app/hive_mind:ro
-      
-      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
-      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+      - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-changeme}@postgres:5432/hypercode
+      - AGENT_NAME=frontend-specialist
     depends_on:
       redis:
         condition: service_healthy
@@ -391,39 +415,25 @@ services:
       - backend-net
       - data-net
     ports:
-      - "8002:8002"
+      - "8002:8000"
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8002/health', timeout=5).raise_for_status()"]
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/ | grep -E '200|404'"]
       interval: 60s
-      timeout: 10s
+      timeout: 5s
       retries: 5
-      start_period: 90s
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
 
   backend-specialist:
     profiles: ["agents"]
     build:
-      context: ./agents/02-backend-specialist
+      context: ./agents
+      dockerfile: cagent-poc/Dockerfile
     container_name: backend-specialist
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - REDIS_URL=redis://redis:6379
-      - CORE_URL=http://hypercode-core:8000
-      - AGENT_HEALTH_URL=http://backend-specialist:8003/health
-    volumes:
-      - ./Configuration_Kit:/app/hive_mind:ro
-      
-      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
-      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
+      - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-changeme}@postgres:5432/hypercode
+      - AGENT_NAME=backend-specialist
     depends_on:
       redis:
         condition: service_healthy
@@ -433,31 +443,13 @@ services:
       - backend-net
       - data-net
     ports:
-      - "8003:8003"
+      - "8003:8000"
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8003/health', timeout=5).raise_for_status()"]
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/ | grep -E '200|404'"]
       interval: 60s
-      timeout: 10s
+      timeout: 5s
       retries: 5
-      start_period: 90s
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 256M
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
 
   database-architect:
     profiles: ["agents"]
@@ -488,9 +480,9 @@ services:
     ports:
       - "8004:8004"
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8004/health', timeout=5).raise_for_status()"]
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8004/health', timeout=4).raise_for_status()"]
       interval: 60s
-      timeout: 10s
+      timeout: 5s
       retries: 5
       start_period: 90s
     deploy:
@@ -515,18 +507,14 @@ services:
   qa-engineer:
     profiles: ["agents"]
     build:
-      context: ./agents/04-qa-engineer
+      context: ./agents
+      dockerfile: cagent-poc/Dockerfile
     container_name: qa-engineer
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - REDIS_URL=redis://redis:6379
-      - CORE_URL=http://hypercode-core:8000
-      - AGENT_HEALTH_URL=http://qa-engineer:8005/health
-    volumes:
-      - ./Configuration_Kit:/app/hive_mind:ro
-      
-      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
-      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
+      - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-changeme}@postgres:5432/hypercode
+      - AGENT_NAME=qa-engineer
     depends_on:
       redis:
         condition: service_healthy
@@ -536,21 +524,12 @@ services:
       - backend-net
       - data-net
     ports:
-      - "8005:8005"
+      - "8005:8000"
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8005/health', timeout=5).raise_for_status()"]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 256M
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/ | grep -E '200|404'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -559,24 +538,19 @@ services:
         max-file: "3"
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
+
 
   devops-engineer:
     profiles: ["agents"]
     build:
-      context: ./agents/05-devops-engineer
+      context: ./agents
+      dockerfile: cagent-poc/Dockerfile
     container_name: devops-engineer
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - REDIS_URL=redis://redis:6379
-      - CORE_URL=http://hypercode-core:8000
-      - AGENT_HEALTH_URL=http://devops-engineer:8006/health
-    volumes:
-      - ./Configuration_Kit:/app/hive_mind:ro
-      
-      - ./agents/base-agent/event_bus.py:/app/event_bus.py:ro
-      - ./agents/base-agent/base_agent.py:/app/base_agent.py:ro
+      - POSTGRES_URL=postgresql://postgres:${POSTGRES_PASSWORD:-changeme}@postgres:5432/hypercode
+      - AGENT_NAME=devops-engineer
     depends_on:
       redis:
         condition: service_healthy
@@ -586,31 +560,13 @@ services:
       - backend-net
       - data-net
     ports:
-      - "8006:8006"
+      - "8006:8000"
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8006/health', timeout=5).raise_for_status()"]
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/ | grep -E '200|404'"]
       interval: 60s
-      timeout: 10s
+      timeout: 5s
       retries: 5
-      start_period: 90s
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 256M
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
 
   security-engineer:
     profiles: ["agents"]
@@ -638,9 +594,9 @@ services:
     ports:
       - "8007:8007"
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8007/health', timeout=5).raise_for_status()"]
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8007/health', timeout=4).raise_for_status()"]
       interval: 60s
-      timeout: 10s
+      timeout: 5s
       retries: 5
       start_period: 90s
     deploy:
@@ -688,9 +644,9 @@ services:
     ports:
       - "8008:8008"
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8008/health', timeout=5).raise_for_status()"]
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8008/health', timeout=4).raise_for_status()"]
       interval: 60s
-      timeout: 10s
+      timeout: 5s
       retries: 5
       start_period: 90s
     deploy:
@@ -742,9 +698,9 @@ services:
     ports:
       - "8009:8009"
     healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8009/health', timeout=5).raise_for_status()"]
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8009/health', timeout=4).raise_for_status()"]
       interval: 60s
-      timeout: 10s
+      timeout: 5s
       retries: 5
       start_period: 90s
     deploy:
