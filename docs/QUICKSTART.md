@@ -20,7 +20,7 @@ cd HyperCode-V2.0
 Set up your environment variables (API keys, Database credentials).
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY / OPENAI_API_KEY
+# Edit .env and add your PERPLEXITY_API_KEY
 ```
 
 ### 3. Launch the Stack
@@ -30,7 +30,7 @@ docker compose up -d
 ```
 
 ### 4. Verify Services
-Check that all 23+ containers are healthy.
+Check that all containers are healthy.
 ```bash
 docker compose ps
 ```
@@ -39,19 +39,18 @@ docker compose ps
 
 | Service | URL | Credentials (Default) |
 |---------|-----|-----------------------|
-| **Web Terminal** | [http://localhost:3000](http://localhost:3000) | N/A |
+| **Mission Control** | [http://localhost:3000/dashboard](http://localhost:3000/dashboard) | N/A |
+| **Orchestrator API** | [http://localhost:8080/docs](http://localhost:8080/docs) | N/A |
 | **Grafana** | [http://localhost:3001](http://localhost:3001) | `admin` / `admin` |
 | **Prometheus** | [http://localhost:9090](http://localhost:9090) | N/A |
-| **API Docs** | [http://localhost:8000/docs](http://localhost:8000/docs) | N/A |
 | **Jaeger** | [http://localhost:16686](http://localhost:16686) | N/A |
 
 ## 🎮 Run Your First Mission
 
-1. Open the **Web Terminal** at `http://localhost:3000`.
-2. Navigate to the **Agents** tab.
-3. Select **Coder Agent**.
-4. Type: `"Create a Python script that calculates the Fibonacci sequence."`
-5. Watch the agent think, plan, and code in real-time.
+1. Open the **Mission Control** at `http://localhost:3000/dashboard`.
+2. Enter your intent in the **Intent Box**.
+3. Click **Execute Intent**.
+4. Watch the agent graph light up as the swarm collaborates.
 
 ## 🛑 Stop Services
 ```bash

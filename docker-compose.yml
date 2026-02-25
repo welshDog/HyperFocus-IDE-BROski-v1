@@ -26,7 +26,7 @@ services:
     build:
       context: ./src/hypercode-core
       dockerfile: Dockerfile
-    container_name: hypercode-core
+    # container_name: hypercode-core
     environment:
       - ENVIRONMENT=production
       - PRISMA_PY_DEBUG=0
@@ -52,7 +52,7 @@ services:
       - backend-net
       - data-net
     ports:
-      - "8000:8000" # Exposed for Windows/WSL2 compatibility
+      - "8000-8001:8000" # Exposed for Windows/WSL2 compatibility
     healthcheck:
       test: ["CMD", "curl", "-f", "--max-time", "5", "http://localhost:8000/health"]
       interval: 30s
@@ -61,6 +61,7 @@ services:
     security_opt:
       - no-new-privileges:true
     deploy:
+      replicas: 2
       resources:
         limits:
           cpus: "1"

@@ -5,8 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BROski IDE",
-  description: "Neurodivergent-first AI IDE",
+  title: "HyperCode – Neurodivergent-First AI Coding Environment",
+  description:
+    "A neurodivergent-first IDE and agent swarm for ADHD, dyslexic, and autistic coders. HyperCode uses AI agents to plan, code, test, and deploy while you stay in hyperfocus.",
 };
 
 export default function RootLayout({

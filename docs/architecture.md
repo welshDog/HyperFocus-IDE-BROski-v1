@@ -50,7 +50,7 @@ graph TD
 - **Project Strategist**: Plans, breaks down tasks, delegates
 - **System Architect**: Defines architecture, patterns, standards
 
-**Model**: Claude Opus (highest reasoning capability)
+**Model**: Perplexity Sonar (Online Research & Reasoning)
 **Responsibilities**: High-level planning, decision-making
 
 ### Tier 2: Specialist Agents (Executors)
@@ -61,63 +61,48 @@ graph TD
 - **DevOps Engineer**: CI/CD, Docker, Kubernetes
 - **Security Engineer**: Security audits, vulnerability scanning
 
-**Model**: Claude Sonnet (fast, efficient)
+**Model**: Perplexity Sonar (Specialized Context)
 **Responsibilities**: Specialized task execution
 
 ## Communication Flow
 
 ### 1. Task Submission
 ```
-User → Orchestrator → Project Strategist → Breakdown → Specialists
+User → Mission Control (Dashboard) → Orchestrator (Port 8080) → Agents
 ```
 
 ### 2. Inter-Agent Communication
 ```
-Agent A → Redis Pub/Sub → Agent B
-         ↓
-    PostgreSQL (persistence)
+Orchestrator → HTTP (Internal Docker Network) → Specialist Agents
 ```
 
 ### 3. Result Aggregation
 ```
-Specialists → Results → Orchestrator → Client
-                ↓
-           Task History (PostgreSQL)
+Specialists → JSON Response → Orchestrator → Client
 ```
 
 ## Data Flow
 
 ### Task Planning
 1. User submits task to Orchestrator
-2. Orchestrator forwards to Project Strategist
-3. Strategist analyzes and creates subtasks
-4. Subtasks stored in Redis with status
-5. Specialists notified via Redis pub/sub
+2. Orchestrator creates a plan using `sonar-reasoning`
+3. Subtasks are delegated to specific agents via their internal API endpoints
 
 ### Task Execution
-1. Specialist receives task from queue
-2. Loads Hive Mind context (standards, skills)
-3. Calls Claude API with enriched prompt
-4. Stores result in Redis
-5. Notifies Orchestrator of completion
+1. Specialist receives payload
+2. Executes task using its specific capabilities
+3. Returns structured result to Orchestrator
 
 ### Result Collection
-1. Orchestrator monitors Redis for completions
-2. Aggregates specialist results
+1. Orchestrator aggregates all results
+2. Returns final workflow report to Dashboard
 
 ## Background Processing
 
-### Celery Worker
-- **Role**: Asynchronous task execution for long-running operations.
-- **Responsibilities**:
-  - Complex code analysis
-  - Large-scale refactoring
-  - Batch data processing
-  - Mission execution management
-- **Dependencies**:
-  - Redis (Broker & Backend)
-  - **OpenAI API Key**: Required for LLM-based operations (Critical dependency).
-  - PostgreSQL (Data persistence)
+### Docker Network
+- **Agents** run on internal ports (e.g., 8001-8009).
+- **Orchestrator** exposes port 8080 to the host.
+- **Frontend** connects to Orchestrator via `localhost:8080` (browser-side).
 
 ### Auto-Restart Policy
 - All services are configured with `restart: always` or `unless-stopped` to ensure high availability.

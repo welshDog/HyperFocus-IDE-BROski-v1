@@ -167,6 +167,17 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="py-12 border-t border-white/5 text-center text-gray-500 text-sm">
+        <div className="flex justify-center gap-6 mb-8 text-xs font-medium uppercase tracking-wider">
+          <Link href="https://github.com/welshDog/HyperCode-V2.0/blob/main/HDVC-Technical.md" target="_blank" className="hover:text-purple-400 transition-colors">
+            Technical Law
+          </Link>
+          <Link href="https://github.com/welshDog/HyperCode-V2.0/blob/main/docs/AGENTS.md" target="_blank" className="hover:text-blue-400 transition-colors">
+            Meet the Agents
+          </Link>
+          <Link href="https://github.com/welshDog/HyperCode-V2.0/blob/main/docs/SETUP_GUIDE.md" target="_blank" className="hover:text-green-400 transition-colors">
+            Setup Guide
+          </Link>
+        </div>
         <p>© 2026 HyperCode Inc. Built with ❤️ by Autonomous Agents.</p>
       </footer>
     </div>

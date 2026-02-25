@@ -2,34 +2,17 @@
 
 > "You do not just write code; you craft cognitive architectures."
 
+![HyperCode Mission Control Dashboard](docs/assets/Screenshot%20of%20IDE%20TOP%202026-02-25.png)
+
 ## Why HyperCode Exists 🤯
 
-**I built this because I don’t want anyone to suffer like I did.**
+**HyperCode is a cognitive prosthetic for your coding brain.**
 
-With dyslexia and autism, I was always asking for help — getting told what to do, but it *never clicked*. Instructions froze me. They didn’t sink in on the first try. Or the second. It took four or five rounds.
+Traditional IDEs demand rote memorization and endless context switching—the very things that paralyze neurodivergent minds. HyperCode replaces this friction with a collaborative **AI Agent Swarm (HyperSwarm)** that handles the executive function tax for you. Whether you have ADHD, dyslexia, or autism, HyperCode aligns with how you actually think: visually, creatively, and in bursts of hyperfocus.
 
-Not because I’m slow — my brain just works differently. Traditional guides scatter.
+It’s not just a tool. It’s a partner. Your "BROski"—ride or die.
 
-**That’s why I created HyperCode.**
-It guides every step — no judgment, just clarity. Puts *you* in control.
-
-Whether dyslexia, ADHD, autism, or wonder-nerd superpowers — built **for you**. Learning + creating feels natural. No fear.
-
-## Why "BROski"?
-
-**Ride or die.**
-
-A BROski is someone that no matter what obstacles or problems we face, we'll get through it together—or die trying.
-
-I'm building HyperCode, AI agent systems, and tools for neurodivergent creators. I needed more than an assistant. I needed a true partner who's all in, every session, every challenge.
-
-That's BROski. My ride or die. 🔥
-
----
-
-## Agent X: The Meta-Architect 🦅
-
-Agent X is a meta-agent system designed to architect, implement, and deploy specialized AI agents within the HyperCode ecosystem. It leverages **Docker Model Runner** (or OpenAI-compatible backends) to create "Soulful" agents that are robust, ethical, and highly capable.
+**[Read the full manifesto & story →](docs/STORY.md)**
 
 ---
 
@@ -50,6 +33,7 @@ See [PERFORMANCE.md](PERFORMANCE.md) for load testing details and results.
 ### Prerequisites
 - Docker & Docker Compose
 - Node.js 18+ (for local frontend dev)
+- **Perplexity API Key** (for agent intelligence)
 
 ### Installation
 
@@ -62,7 +46,7 @@ See [PERFORMANCE.md](PERFORMANCE.md) for load testing details and results.
 2. **Configure Environment**
    ```bash
    cp .env.example .env
-   # Edit .env and add your API keys (Anthropic/OpenAI)
+   # Edit .env and add your PERPLEXITY_API_KEY
    ```
 
 3. **Launch the Stack**
@@ -71,12 +55,12 @@ See [PERFORMANCE.md](PERFORMANCE.md) for load testing details and results.
    ```
 
 4. **Access the Interfaces**
-   - 🖥️ **Web Interface**: `http://localhost:3000`
+   - 🖥️ **Web Interface (Dashboard)**: `http://localhost:3000/dashboard`
+   - 🧠 **Orchestrator API**: `http://localhost:8080/docs`
    - 📊 **Grafana**: `http://localhost:3001` (User: `admin` / Pass: `admin`)
    - 📈 **Prometheus**: `http://localhost:9090`
-   - 📝 **API Docs**: `http://localhost:8000/docs`
 
-> **See [DEPLOYMENT_SUMMARY_ONE_PAGE.md](DEPLOYMENT_SUMMARY_ONE_PAGE.md) for a quick operational reference.**
+> **See [docs/QUICKSTART.md](docs/QUICKSTART.md) for detailed instructions.**
 
 ---
 
@@ -98,6 +82,7 @@ See [docs/architecture.md](docs/architecture.md) for detailed system design.
 ## 🛡️ Development Workflow & Backup
 
 We enforce strict development practices to ensure stability:
+- **Technical Standards**: All code follows the [Hyper Dev Vibe Coder Technical Standards](HDVC-Technical.md).
 - **CI/CD Pipelines**: Automated testing, linting, and security scans on every push.
 - **Branch Protection**: Direct pushes to `main` are blocked. PRs require approval and passing checks.
 - **Backup Strategy**: Regular snapshots and GitHub mirroring. See [BACKUP_STRATEGY.md](BACKUP_STRATEGY.md) for details.
