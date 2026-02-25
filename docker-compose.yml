@@ -239,7 +239,7 @@ services:
       - ./Configuration_Kit:/app/hive_mind:ro
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "8001:8000"
+      - "8011:8000"
     networks:
       - backend-net
       - data-net

@@ -58,3 +58,27 @@ The `.github/workflows/performance.yml` workflow automatically runs these tests 
 | **Graph FPS (500 nodes)** | 60 | 15 | **60** |
 
 *Note: Run the load test locally to generate current metrics.*
+
+## 📈 Load Test Results (2026-02-25)
+
+**Environment:** Production Mode (2 Replicas)
+**Tool:** k6 (Smoke Test)
+**Duration:** 50s
+**VUs:** 10 (Ramp-up)
+
+<details>
+<summary>Click to see full results table</summary>
+
+| Metric | Value | Threshold | Status |
+| :--- | :--- | :--- | :--- |
+| **Throughput** | ~5.1 req/s | - | ✅ |
+| **P95 Latency** | 2.56s | < 300ms | ⚠️ Missed |
+| **Avg Latency** | 573ms | - | - |
+| **Error Rate** | 0.00% | < 0.1% | ✅ |
+| **Checks Passed** | 100% | 100% | ✅ |
+
+**Note:** P95 latency missed the aggressive 300ms target during this smoke test. Optimization of the `/health` endpoint or infrastructure scaling is recommended for production loads.
+
+</details>
+
+![Grafana Dashboard](docs/assets/Screenshot%20of%20IDE%20TOP%202026-02-25.png)
