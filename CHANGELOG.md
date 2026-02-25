@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0-rc1] - 2026-02-25
+
+### Added
+- **Production Readiness:** Scaled `hypercode-core` to 2 replicas for high availability.
+- **Load Testing:** Added `k6` smoke test script (`perf/load-test.js`) and validation report.
+- **Documentation:** Created `docs/STORY.md` for the full manifesto and `docs/validation-report.md` for QA sign-off.
+- **Root Cleanup:** Moved 50+ clutter files to `docs/reports/` and `archive/` for a cleaner repo root.
+
+### Changed
+- **README Refactor:** Streamlined `README.md` to be concise, visual, and neurodivergent-friendly.
+- **Performance Docs:** Updated `PERFORMANCE.md` with latest load test results (P95: 2.56s).
+- **Service Configuration:** Moved `coder-agent` port to `8011` to avoid conflict with scaled core services.
+
 ## [3.0.0-performance] - 2026-02-22
 
 ### Added
